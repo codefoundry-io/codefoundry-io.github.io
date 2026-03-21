@@ -245,7 +245,7 @@ Chirpy에서 이미지 정렬과 본문 흐름을 함께 점검할 때 사용할
 - 링크용 ID는 영어 slug로 고정하고
 - 다른 포스트에서 직접 섹션 링크를 걸 수 있습니다
 
-예시 링크: `/posts/your-post/#why-this-stack`{: .filepath}
+예시 링크: `/posts/2026-02-16-ghec-blog-begin.md/#intro`{: .filepath}
 
 ### inline link guide {#inline-link-guide}
 
@@ -337,14 +337,14 @@ Chirpy 테마는 내부적으로 **Kramdown** 마크다운 렌더러를 사용�
 다른 포스트나 페이지의 특정 위치로 이동할 때는 **대상 포스트 URL 뒤에 `#슬러그`를 덧붙입니다.**
 
 ```md
-[빌드 로직 섹션 바로가기](/posts/your-post/#build-logic)
+[첫블로그 철칙 바로가기](/posts/2026-02-16-ghec-blog-begin.md/#intro)
 ```
 {: .nolineno }
 
 같은 블로그 내 다른 포스트 예시:
 
-- [다른 글 전체 보기](/posts/your-post/)
-- [다른 글의 특정 섹션 보기](/posts/your-post/#build-logic)
+- [다른 글 전체 보기](/posts/2026-02-16-ghec-blog-begin.md)
+- [다른 글의 특정 섹션 보기](/posts/2026-02-16-ghec-blog-begin.md/#intro)
 
 ##### 외부 문서 링크와 구분할 때 {#external-link-guide}
 
