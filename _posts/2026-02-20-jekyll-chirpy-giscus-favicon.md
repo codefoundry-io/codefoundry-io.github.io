@@ -3,7 +3,7 @@ title: "GitHub Pages + Jekyll - Chirpy, giscus 로 블로그 만들기"
 date: 2026-03-22 14:06:00 +0900
 categories: [Blog, Chirpy]
 tags: [github-pages, jekyll, chirpy, giscus, blog]
-description: "홈 화면 리스트와 검색 결과(SEO)에 노출될 핵심 요약 1~2줄을 적는다."
+description: "GitHub Pages와 Jekyll Chirpy 테마를 활용한 기술 블로그 구축 가이드,  giscus 댓글 연동부터 파비콘 설정, 마크다운 팁까지 초기 셋업 과정을 상세히 기록했습니다."
 
 image:
   path: /assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/cover.png
