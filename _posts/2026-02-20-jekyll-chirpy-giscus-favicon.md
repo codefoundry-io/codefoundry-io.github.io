@@ -342,9 +342,9 @@ convert -background none -size 512x512 logo.svg avatar_512.png
 ```
 {: file="Ubuntu" }
 
-이제 준비한 이미지를 블로그 디렉터리의 `assets/img/`{#filepath} 폴더 안에 넣는다. (파일명 예시: `avatar.png`)
+이제 준비한 이미지를 블로그 디렉터리의 `assets/img/`{: .filepath} 폴더 안에 넣는다. (파일명 예시: `avatar.png`)
 
-1. 최상단 `_config.yml`{#filepath} 파일을 열고 `avatar:` 항목을 찾아 파일의 절대 경로를 입력한다.
+1. 최상단 `_config.yml`{: .filepath} 파일을 열고 `avatar:` 항목을 찾아 파일의 절대 경로를 입력한다.
 
 YAML
 
@@ -367,7 +367,7 @@ avatar: "/assets/img/avatar.png"
 3. 각종 OS별 미리보기가 나오는데, 별다른 설정 변경 없이 스크롤을 맨 아래로 내려 `Generate your Favicons and HTML code` 버튼을 클릭한다.
 4. 변환이 완료되면 `Favicon package` 버튼을 눌러 `.zip` 파일을 다운로드한다.
 5. 다운로드한 `.zip` 파일의 압축을 푼다.
-6. 압축이 풀린 모든 이미지 파일(`favicon.ico`, `apple-touch-icon.png`, `android-chrome-*.png` 등)을 블로그의 `assets/img/favicons/`{#filepath}  폴더 안에 **통째로 덮어씌운다.**
+6. 압축이 풀린 모든 이미지 파일(`favicon.ico`, `apple-touch-icon.png`, `android-chrome-*.png` 등)을 블로그의 `assets/img/favicons/`{: .filepath} 폴더 안에 **통째로 덮어씌운다.**
 
 아래와 같이 보이면 된다.
 
@@ -381,9 +381,9 @@ avatar: "/assets/img/avatar.png"
 
 [공식 설정 가이드](https://chirpy.cotes.page/posts/getting-started/#configuration) 를 참고 하면 우리가 먼저 해야할 성정은 이것이다.
 
-1. `_config.yml`{#filepath}   에서 아래 항목을 채워준다. 
+1. `_config.yml`{: .filepath} 에서 아래 항목을 채워준다. 
 
-   > timezone 과 lang은 사용가능한 목록의 웹페이지를 `_config.yml`{#filepath}  에 주석으로 명시하고 있다
+   > timezone 과 lang은 사용가능한 목록의 웹페이지를 `_config.yml`{: .filepath}  에 주석으로 명시하고 있다
    >
    > 내가 설명하지 않는 것들은 다음에 기회가 되면 다룰 생각이다 웹 검색에 노출되는 것과 관련된 옵션들로
    >
@@ -427,7 +427,7 @@ avatar: "/assets/img/avatar.png"
 
    
 
-1. `_config.yml`{#filepath}   에서 Social을 항목을 채워준다.
+1. `_config.yml`{: .filepath}  에서 Social을 항목을 채워준다.
 
    ```yaml
    social:
@@ -439,7 +439,7 @@ avatar: "/assets/img/avatar.png"
        - https://github.com/codefoundry-io
    ```
 
-1. `_tabs/about.md`{#filepath} 정보를 누르면 나오는 페이지를 만들어야한다. 
+1. `_tabs/about.md`{: .filepath}정보를 누르면 나오는 페이지를 만들어야한다. 
 
    위 캡쳐에서 정보를 누르면 이동되는 화면이다.
    --- 으로 감싸진 부분은 건드리지말고 밑에 자기 소개를 추가하자.
@@ -466,7 +466,7 @@ avatar: "/assets/img/avatar.png"
    - [RSS 피드 구독](/feed.xml)
    ```
 
-4. `_data/contact.yml`{#filepath} 에 기본 연락 수단 넣기
+4. `_data/contact.yml`{: .filepath} 에 기본 연락 수단 넣기
    아래처럼 보이는 화면이다.
 
    ![contact](/assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/image-20260322132229793.png)
@@ -504,7 +504,7 @@ avatar: "/assets/img/avatar.png"
    #
    ```
 
-5. 이쯤 되면 `_data/contact.yml`{#filepath} 이게 뭔가 궁금해졌을 것이다.
+5. 이쯤 되면 `_data/contact.yml`{: .filepath}이게 뭔가 궁금해졌을 것이다.
    글을 작성하면 하단에 보이는 글을 공유하는 방법이다.
 
    ![share](/assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/image-20260322132658195.png)
@@ -551,7 +551,7 @@ avatar: "/assets/img/avatar.png"
 
 ### 파일 이름 짓기
 
-- **새로운 글은 반드시 최상위의 `_posts`{#filepath}** 이 폴더 안에 생성해야 하며, 파일명은 무조건 아래의 포맷을 지켜야 한다.
+- **새로운 글은 반드시 최상위의 `_posts`{: .filepath}** 이 폴더 안에 생성해야 하며, 파일명은 무조건 아래의 포맷을 지켜야 한다.
 
 > **`YYYY-MM-DD-title.md`**
 >
@@ -565,9 +565,9 @@ avatar: "/assets/img/avatar.png"
 
 같은 폴더에 이미지를 계속 넣다보면 관리도 귀찮아지고 포스트를 만들기도 귀찮을 것이다.
 
-글을 쓸 때마다 `assets/img/posts/`{#filepath} 폴더 아래에 **포스트 파일명과 똑같은 이름의 폴더**를 하나 만든다.
+글을 쓸 때마다 `assets/img/posts/`{: .filepath}폴더 아래에 **포스트 파일명과 똑같은 이름의 폴더**를 하나 만든다.
 
-(예: `assets/img/posts/2026-03-22-my-first-post/`{#filepath})
+(예: `assets/img/posts/2026-03-22-my-first-post/`{: .filepath}
 
 그러면 markdown에 이미지를 어떻게 넣어 너무 귀찮잖아. 경로 변경되면 또 복사까지 하라고?
 
