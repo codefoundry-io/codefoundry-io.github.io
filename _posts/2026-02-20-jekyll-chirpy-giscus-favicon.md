@@ -104,7 +104,7 @@ markdown이 어떻게 html로 렌더링 되는지 두개의 코드를 보면 단
 \> **출처:** [Jekyll Chirpy 공식 문서](https://chirpy.cotes.page/posts/getting-started)
 {: .prompt-info }
 
-### repository 생성
+### Repository 생성 {#create-repository}
 
 아래 링크로 이동해서 Use this template로 가져오도록 하자.
 
@@ -124,7 +124,7 @@ markdown이 어떻게 html로 렌더링 되는지 두개의 코드를 보면 단
 
 ![Create new repository from template](/assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/image-20260321142547202.png)
 
-### Repositry  Setting 
+### Repositry  Setting {#repository-setting}
 
 다른 세팅은 취향대로 하지만 우리는 discussion을 이용한 댓글 시스템을 사용할거니 Discussions를 켜주자. 
 
@@ -149,7 +149,7 @@ markdown이 어떻게 html로 렌더링 되는지 두개의 코드를 보면 단
 
 
 
-### Install giscus
+### Install giscus  {#install-giscus}
 
 말한대로 Githb Page는 사실상 정적 페이지이다. 댓글이나 이런게 존재할수 없지만 Issue나 Sicdussions등을 이용해서
 댓글을 설정할수 있는 여러가지 솔루션이 있다.
@@ -169,7 +169,7 @@ https://github.com/apps/giscus
 
 ![install giscus to my repo](/assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/image-20260321144104947.png)
 
-### giscus 설정
+### giscus 설정 {#configure-giscus}
 
 https://github.com/apps/giscus에 다시들어가면 Install 에서 Configure로 변경된 것을 확인할 수 있다.
 
@@ -304,9 +304,9 @@ flowchart LR
 
 
 
-### 기본 적인 블로그 세팅
+### 기본 적인 블로그 세팅 {#basic-blog-settings}
 
-#### 아바타
+#### 아바타 {#avatar}
 
 아바타는 내 대표이미지고 정사각형의 이미지 사용이 권장된다. 나는 파비콘을 아바타와 동일하게 했는데 다르게 하고 싶으면
 
@@ -355,7 +355,7 @@ avatar: "/assets/img/avatar.png"
 
 
 
-#### 파비콘
+#### 파비콘 {#favicon}
 
 파비콘이 뭔지도 잘 몰랐는데 위 이미지에서 표기한 벌레(Chirpy야 미안) 이미지로 다양한 OS와 디바이스(iOS, Windows 등)에 완벽하게 대응해야하기 때문에 
 
@@ -374,7 +374,7 @@ avatar: "/assets/img/avatar.png"
 
 ![favicons folder](/assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/image-20260322121541848.png)
 
-#### 내 정보 설정
+#### 내 정보 설정 {#site-profile-settings}
 
 이제 프로필 사진과 favicon은 만들었지만 사이트에 모든 링크들이 이상하게 되어있을 것이다.
 
@@ -535,7 +535,7 @@ avatar: "/assets/img/avatar.png"
 
 이제 글을 써야하는데 이것도 쉽지 않다.
 
-## 5. 첫 블로그 포스팅하기.
+## 5. 첫 블로그 포스팅하기 {#first-blog-post}
 
 여기까지 왔으니까 다한 것 같나요?
 
@@ -551,7 +551,7 @@ avatar: "/assets/img/avatar.png"
 
 그만 울고 시작하자 [일단 공식 가이드](https://chirpy.cotes.page/posts/write-a-new-post/) 링크 드리겠습니다.
 
-### 파일 이름 짓기
+### 파일 이름 짓기 {#post-filename}
 
 - **새로운 글은 반드시 최상위의 `_posts`{: .filepath}** 이 폴더 안에 생성해야 하며, 파일명은 무조건 아래의 포맷을 지켜야 한다.
 
@@ -563,7 +563,7 @@ avatar: "/assets/img/avatar.png"
 - **영문 소문자와 하이픈:** `title` 부분은 실제 화면 제목이 아니라 **URL 주소(URI)**로 쓰인다. 한글 대신 영문 소문자와 숫자, 하이픈(`-`) 조합으로 해야한다. 진짜 제목은 파일 안의 Front Matter에 적는다.
 - **확장자:** 반드시 `.md` 또는 `.markdown`을 사용한다.
 
-### 이미지 폴더 만들기
+### 이미지 폴더 만들기 {#image-folder}
 
 같은 폴더에 이미지를 계속 넣다보면 관리도 귀찮아지고 포스트를 만들기도 귀찮을 것이다.
 
@@ -578,7 +578,7 @@ avatar: "/assets/img/avatar.png"
 >
 > 방법 2. 아무렇게나 이미지를 넣고 한번에 폴더 이동후에  포스트 상단 Front Matter에 `media_subpath:` 경로를 지정해 준다.
 
-### 포스트 상단 Front Matter
+### 포스트 상단 Front Matter {#front-matter}
 
 ```yaml
 ---
@@ -644,7 +644,7 @@ pin: false
 
 ## 마무리 및 더 읽을거리 - Conclusion & Further Reading {#conclusion}
 
-### 마치며
+### 마치며 {#closing}
 
 이 블로그는 사실 3번째 만들어졌다.
 
@@ -654,7 +654,7 @@ pin: false
 
 결과물을 공유한다. 
 
-#### Proof of concept:
+#### Proof of concept: {#proof-of-concept}
 
 -  [Markdown 소스 코드 보기](https://github.com/codefoundry-io/codefoundry-io.github.io/blob/main/_posts/2026-03-08-chirpy-text-and-typography-demo-annotated.md?plain=1)  ->  [렌더링 결과 보기](/posts/chirpy-text-and-typography-demo-annotated)
 - 만들어진 [Blog](https://codefoundry-io.github.io/)
@@ -662,7 +662,7 @@ pin: false
 
 
 
-### 읽을거리
+### 읽을거리 {#further-reading}
 
 항상 뭘 만들면 유지보수를 생각해야 합니다. 나중에 업데이트도 해야하고 
 이 정도 수준에서 만족하지 못하는 분들도 계실거라고 링크 남깁니다.
@@ -671,7 +671,7 @@ pin: false
 > - [Chirpy 홈페이지](https://chirpy.cotes.page/)
 {: .prompt-tip }
 
-## 다음글 예고
+## 다음글 예고 {#next-post-preview}
 
 - Gemini Api 무료 사용 방법 with Cline
 - Android Studio AI Agent 가이드
