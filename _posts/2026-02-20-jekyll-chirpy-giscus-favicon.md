@@ -12,7 +12,7 @@ image:
 toc: true
 comments: true
 math: false
-mermaid: false
+mermaid: true
 
 
 pin: false
@@ -173,10 +173,7 @@ https://github.com/apps/giscus에 다시들어가면 Install 에서 Configure로
 
 ![image-20260321145916913](/assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/image-20260321145916913.png){: .w-50 .right }
 
-댓글이 비슷한 제목의 글을 잘못가져오거나  
-
-하는 것을 막기 위한 옵션
-
+댓글이 비슷한 제목의 글을 잘못가져오거나 하는 것을 막기 위한 옵션
 <div style="clear: both"></div>
 
 
@@ -508,6 +505,7 @@ avatar: "/assets/img/avatar.png"
    글을 작성하면 하단에 보이는 글을 공유하는 방법이다.
 
    ![share](/assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/image-20260322132658195.png)
+   
    역시 주석을 풀면 적용된다. 이거 열심히 쓰면 회사 짤려도 갈 구석이 생기나...하는 희망회로로 Linkedin을 추가해놨다.
 
    ```yaml
