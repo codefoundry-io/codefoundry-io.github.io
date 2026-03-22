@@ -2,7 +2,7 @@
 title: "Chirpy Text and Typography Demo Plus Guide"
 date: 2026-03-08 16:40:00 +0900
 categories: [Blog, Chirpy]
-tags: [chirpy, jekyll, kramdown, markdown, demo, guide]
+tags: [chirpy, jekyll, kramdown, markdown, guide, sample]
 description: Chirpy Starter에서 자주 쓰는 text and typography 기능을 예제와 함께 설명형으로 정리한 샘플 포스트. 재사용용 가이드와 AI 프롬프트 작성용 참고 문구를 함께 포함합니다.
 image:
   path: /assets/img/posts/2026-03-08-chirpy-text-and-typography-demo/cover.png
@@ -11,7 +11,7 @@ pin: false
 math: true
 mermaid: true
 toc: true
-comments: false
+comments: true
 ---
 
 *[AAB]: Android App Bundle
