@@ -20,7 +20,11 @@ pin: false
 
 안녕하세요. 이 블로그의 대망의 첫 정식 포스트 주제는 바로 '이 블로그를 어떻게 구축했는가'입니다.
 
-사실 기술 블로그를 직접 만든다는 건 저에게도 꽤 생소한 경험이었습니다. 흔히들 '시대가 변했다'고 말하곤 하죠. 하지만 생각해보면 시대는 항상, 실시간으로 변해왔습니다. 이러한 흐름에 적응하려면 끊임없이 새로운 것을 익히고 배우며, 그 안에서 아이디어를 얻어 나만의 방식으로 조합해 낼 줄 알아야 할 것 같네요.
+사실 기술 블로그를 직접 만든다는 건 저에게도 꽤 생소한 경험이었습니다. 흔히들 '시대가 변했다'고 말하곤 하죠. 
+
+하지만 생각해보면 시대는 항상, 실시간으로 변해왔습니다. 이러한 흐름에 적응하려면 끊임없이 새로운 것을 익히고 배우며, 
+
+그 안에서 아이디어를 얻어 나만의 방식으로 조합해 낼 줄 알아야 할 것 같네요.
 
 이제는 AI라는 든든한 조력자를 활용해 훨씬 더 편하고 과감하게 시도해 볼 수 있는 환경이 되었으니까요.
 
@@ -106,9 +110,9 @@ markdown이 어떻게 html로 렌더링 되는지 두개의 코드를 보면 단
 
 웹프로그래밍 및 디자인에 전문적인 사람이라면 starter가 아니라[jekyll-theme-chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 이 repository를 fork 해도 된다.
 [chirpy-starter](https://github.com/cotes2020/chirpy-starter)는 대부분의 theme를  [jekyll-theme-chirpy](https://github.com/cotes2020/jekyll-theme-chirpy)를 바라보도록 해놨으니 커스텀으로 어것 저것 손댈거라면 이 방식이 옳다.
-하지만 나는 자신이 없으므로 Stater로 하기로 진행.
+하지만 나는 자신이 없으므로 Starter로 하기로 진행.
 
-https://github.com/cotes2020/chirpy-starter
+[chirpy-starter](https://github.com/cotes2020/chirpy-starter)
 
 ![Use this templet](/assets/img/posts/2026-02-20-jekyll-chirpy-giscus-favicon/image-20260321142301321.png)
 
@@ -234,9 +238,9 @@ repository 의 `_config.yml`{: .filepath}을 수정하자
 예를 들면 theme의 경우는 사용자가 설정을 해줘도 chirpy에서 덮어씌우기 때문에 넣어도 무용지물이다
 이게 마음에 안들면 chirpy origin repository를  fork해서 커스터마이징 해야한다. (어우 난 싫다.)
 
-https://github.com/cotes2020/jekyll-theme-chirpy/blob/9adb7e352b7da2ea1d8d34d0dddcd4bbd7490733/_includes/comments/giscus.html#L2-L29
+[chirpy가 직접 설정하는 코드 링크](https://github.com/cotes2020/jekyll-theme-chirpy/blob/9adb7e352b7da2ea1d8d34d0dddcd4bbd7490733/_includes/comments/giscus.html#L2-L29)
 
-우리가 정해준거 말고는 다 알아서 설정해주고 있다 고맙다.
+코드를 보면 우리가 정해준거 말고는 다 알아서 설정해주고 있다 고맙다.
 
 ```html
 <script>
@@ -565,12 +569,12 @@ avatar: "/assets/img/avatar.png"
 
 글을 쓸 때마다 `assets/img/posts/`{: .filepath}폴더 아래에 **포스트 파일명과 똑같은 이름의 폴더**를 하나 만든다.
 
-(예: `assets/img/posts/2026-03-22-my-first-post/`{: .filepath}
+예: `assets/img/posts/2026-03-22-my-first-post/`{: .filepath}
 
 그러면 markdown에 이미지를 어떻게 넣어 너무 귀찮잖아. 경로 변경되면 또 복사까지 하라고?
 
 > 방법 1. markdown editor 대부분이 캡쳐한 이미지를 붙여넣을때 이미지를 상대경로로 자동 복사하는 기능을 제공한다.
-> [Paste Image](https://marketplace.visualstudio.com/items?itemName=mushan.vscode-paste-image) [Markdown Image](https://marketplace.visualstudio.com/items?itemName=hancel.markdown-image) [Typora](https://typora.io/) , 심지어 [Obsidian](https://obsidian.md/)도 해당 기능을 제공한다.
+> [Paste Image](https://marketplace.visualstudio.com/items?itemName=mushan.vscode-paste-image), [Markdown Image](https://marketplace.visualstudio.com/items?itemName=hancel.markdown-image), [Typora](https://typora.io/), 심지어 [Obsidian](https://obsidian.md/)도 해당 기능을 제공한다.
 >
 > 방법 2. 아무렇게나 이미지를 넣고 한번에 폴더 이동후에  포스트 상단 Front Matter에 `media_subpath:` 경로를 지정해 준다.
 
