@@ -54,6 +54,13 @@ comments: true
 - mermaid
 - checklist
 - table
+- 비디오 임베드 (local·YouTube)
+- 오디오 임베드
+- dark/light 이미지 · LQIP · media_subpath
+- image right align · pin
+- mermaid 확장 (sequence·gantt·state·er)
+- diff / console 코드 블록
+- table 열 정렬
 
 > 이 포스트는 렌더링 테스트와 작성 가이드를 겸하는 샘플입니다.
 {: .prompt-info }
@@ -622,6 +629,284 @@ graph TD
     C --> D[Test Execution]
     D --> E[Artifact Upload]
 ```
+
+## 미디어 · 다이어그램 · 코드 확장 {#rich-media}
+
+텍스트/타이포그래피 외에, 기술 블로그를 더 풍부하게 만드는 **미디어 임베드 · 다이어그램 · 코드 블록** 확장을 정리합니다. Chirpy 7.x 기준입니다.
+
+> 아래 **로컬 미디어(비디오·오디오·다크/라이트 이미지·LQIP)** 예제는 실제 파일이 있어야 렌더됩니다. 문법만 보여주는 예제는 실제 파일 경로로 바꾼 뒤 `./tools/test.sh`(html-proofer)로 확인하고 발행하세요.
+{: .prompt-warning }
+
+### 로컬 비디오 임베드 {#embed-video}
+
+**용도**  
+앱 화면 녹화, CI 실행 장면처럼 **직접 만든 영상**을 본문에 반응형으로 넣을 때 사용합니다.
+
+**추천 상황**
+
+- Android 앱 동작 시연
+- GitHub Actions 워크플로 실행 캡처
+- 스크린샷으로는 전달이 약한 인터랙션
+
+**AI 요청 예시**  
+`데모 영상은 Chirpy embed/video.html로 넣고 poster와 title을 지정해줘`
+
+실제 파일을 `assets/img/posts/<슬러그>/`에 넣은 뒤 아래처럼 임베드합니다. `autoplay`, `loop`, `muted`, `types` 속성도 지정할 수 있습니다.
+
+{% raw %}
+```liquid
+{% include embed/video.html
+   src='/assets/img/posts/2026-03-08-chirpy-text-and-typography-demo/demo.mp4'
+   title='앱 데모 녹화'
+   poster='/assets/img/posts/2026-03-08-chirpy-text-and-typography-demo/cover.png' %}
+```
+{% endraw %}
+
+> 저작권: 자가 호스팅(파일 직접 업로드)은 **재배포 허용 라이선스**가 필요합니다. 무료 예시로 Blender 오픈무비(CC BY 3.0)를 [구글 공개 샘플 버킷](https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4)에서 받을 수 있습니다. 용량이 크면 repo가 무거워지니 짧게 자른 저용량 클립을 권장합니다.
+{: .prompt-tip }
+
+### YouTube 임베드 {#embed-youtube}
+
+**용도**  
+이미 YouTube에 있는 영상(세션 녹화, 공개 데모)을 호스팅 비용 없이 반응형으로 넣을 때 사용합니다.
+
+**추천 상황**
+
+- 컨퍼런스/세션 다시보기
+- 공개된 데모 영상 인용
+- 파일을 직접 호스팅하고 싶지 않을 때
+
+**AI 요청 예시**  
+`이 유튜브 영상을 Chirpy embed/youtube.html로 넣고 출처를 CC BY로 표기해줘`
+
+아래는 Blender 오픈무비 _Big Buck Bunny_(CC BY 3.0) 실제 임베드 예제입니다.
+
+{% include embed/youtube.html id='Q0zri3tzbek' %}
+_© Blender Foundation · [peach.blender.org](https://peach.blender.org/) · CC BY 3.0_
+
+> 임베드는 YouTube 서버에서 스트리밍되므로 내 사이트가 영상을 복제하지 않습니다. 그래도 **공식/CC 라이선스** 영상 위주로 쓰는 편이 안전합니다. Twitch·Bilibili도 `embed/twitch.html`, `embed/bilibili.html`로 같은 방식입니다.
+{: .prompt-info }
+
+### 오디오 임베드 {#embed-audio}
+
+**용도**  
+짧은 음성 메모, 알림음, 팟캐스트 클립 등을 본문에 넣을 때 사용합니다.
+
+**AI 요청 예시**  
+`오디오 파일은 embed/audio.html로 넣어줘`
+
+{% raw %}
+```liquid
+{% include embed/audio.html
+   src='/assets/img/posts/2026-03-08-chirpy-text-and-typography-demo/clip.mp3'
+   title='알림음 예제' %}
+```
+{% endraw %}
+
+### 다크/라이트 모드 이미지 {#image-dark-light}
+
+**용도**  
+다이어그램이나 스크린샷을 **테마별로 다르게** 보여줘, 라이트/다크 두 모드에서 모두 자연스럽게 만들 때 사용합니다. (Chirpy 7.0+)
+
+**추천 상황**
+
+- 배경이 흰색/검은색인 다이어그램
+- 라이트 UI · 다크 UI 캡처를 각각
+- 투명 배경 로고
+
+**AI 요청 예시**  
+`밝은 버전과 어두운 버전 이미지를 각각 .light / .dark로 지정해줘`
+
+```md
+![Light](/path/diagram-light.png){: .light }
+![Dark](/path/diagram-dark.png){: .dark }
+```
+
+같은 자리에서 라이트 모드면 첫 번째, 다크 모드면 두 번째 이미지가 표시됩니다.
+
+### LQIP (저품질 플레이스홀더) {#image-lqip}
+
+**용도**  
+무거운 이미지가 로드되기 전 **저해상도 미리보기**를 먼저 보여줘 체감 로딩 속도를 개선할 때 사용합니다.
+
+**AI 요청 예시**  
+`대표 이미지에 lqip 저해상도 플레이스홀더를 붙여줘`
+
+```md
+![Cover](/path/cover.png){: lqip="/path/cover-lqip.webp" w="1200" h="630" }
+```
+
+### media_subpath (경로 반복 제거) {#media-subpath}
+
+**용도**  
+포스트 안 이미지가 많을 때, **공통 경로를 front matter에 한 번만** 지정해 본문에서는 파일명만 쓰도록 합니다.
+
+**추천 상황**
+
+- 이미지가 여러 장인 튜토리얼
+- `/assets/img/posts/<슬러그>/`를 매번 반복하기 싫을 때
+
+**AI 요청 예시**  
+`이미지 공통 경로는 media_subpath로 빼고 본문은 파일명만 쓰게 해줘`
+
+front matter에 아래를 추가하면:
+
+```yaml
+media_subpath: /assets/img/posts/2026-03-08-chirpy-text-and-typography-demo/
+```
+
+본문에서는 파일명만 짧게 씁니다.
+
+```md
+![Cover](cover.png){: w="1200" h="630" .shadow }
+```
+
+> 이 데모 포스트 본문은 이미지에 전체 경로를 그대로 쓰고 있습니다. `media_subpath`는 새 포스트에서 처음부터 적용하는 편이 혼선이 없습니다.
+{: .prompt-tip }
+
+### 이미지 우측 정렬 + 캡션 {#image-right-caption}
+
+**용도**  
+이미지를 본문 오른쪽에 붙여 텍스트가 옆으로 흐르게 하고, 바로 아랫줄 이탤릭으로 캡션을 답니다. (데모 앞쪽 `.left`의 반대)
+
+**AI 요청 예시**  
+`이 이미지는 오른쪽 정렬하고 아래에 캡션을 달아줘`
+
+![Cover image](/assets/img/posts/2026-03-08-chirpy-text-and-typography-demo/cover.png){: w="360" h="189" .right }
+_오른쪽 정렬 + 캡션 예시_
+
+이 문단은 이미지가 오른쪽에 붙었을 때 본문이 왼쪽에서 어떻게 흐르는지 확인하기 위한 예시입니다.  
+캡션은 이미지 바로 다음 줄에 이탤릭(`_..._`)으로 적으면 Chirpy가 자동으로 캡션 스타일을 적용합니다.  
+문단이 충분히 길어야 이미지 옆 흐름을 눈으로 확인하기 좋습니다.
+
+<div style="clear: both"></div>
+
+### pin (대표 글 상단 고정) {#pin-post}
+
+**용도**  
+공지, 대표 글, 시리즈 시작 글을 홈 화면 최상단에 고정할 때 사용합니다.
+
+**AI 요청 예시**  
+`이 글은 홈 상단에 고정되도록 pin 처리해줘`
+
+front matter에 아래 한 줄을 추가합니다.
+
+```yaml
+pin: true
+```
+
+### Mermaid 다이어그램 확장 {#mermaid-more}
+
+**용도**  
+데모의 기본 플로우차트(`graph TD`) 외에도, `mermaid: true`만 있으면 다양한 다이어그램이 그대로 렌더됩니다. CI/CD·Android 주제에 잘 어울리는 것들입니다.
+
+**추천 상황**
+
+- `sequenceDiagram`: 빌드→테스트→릴리즈 호출 순서
+- `gantt`: 릴리즈/스프린트 타임라인
+- `stateDiagram-v2`: 앱·워크플로 상태 전이
+- `erDiagram`: DB 스키마
+
+**AI 요청 예시**  
+`PR 머지부터 배포까지를 mermaid sequenceDiagram으로 그려줘`
+
+시퀀스 다이어그램:
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant GH as GitHub Actions
+    participant Run as Self-hosted Runner
+    Dev->>GH: git push (PR)
+    GH->>Run: 워크플로 트리거
+    Run->>Run: build & test
+    Run-->>GH: 결과 · 아티팩트
+    GH-->>Dev: 상태 체크 리포트
+```
+
+릴리즈 타임라인(gantt):
+
+```mermaid
+gantt
+    title 릴리즈 준비 일정
+    dateFormat  YYYY-MM-DD
+    section 개발
+    기능 구현       :a1, 2026-03-01, 5d
+    코드 리뷰       :a2, after a1, 2d
+    section 검증
+    QA 회귀         :b1, after a2, 3d
+    릴리즈 태깅      :milestone, after b1, 0d
+```
+
+상태 전이(stateDiagram):
+
+```mermaid
+stateDiagram-v2
+    [*] --> Queued
+    Queued --> Running
+    Running --> Passed
+    Running --> Failed
+    Failed --> Queued: 재시도
+    Passed --> [*]
+```
+
+### diff 코드 블록 {#code-diff}
+
+**용도**  
+설정·코드의 **변경 전/후**를 +/- 색으로 한눈에 보여줄 때 사용합니다.
+
+**추천 상황**
+
+- 워크플로 YAML 수정
+- 리팩터링 전후 비교
+- 리뷰 포인트 강조
+
+**AI 요청 예시**  
+`이 변경을 diff 코드 블록으로 before/after가 보이게 해줘`
+
+```diff
+ jobs:
+   build:
+-    runs-on: ubuntu-latest
++    runs-on: self-hosted
+     steps:
+       - uses: actions/checkout@v4
++      - name: Cache Gradle
++        uses: actions/cache@v4
+```
+
+### console / 터미널 출력 {#code-console}
+
+**용도**  
+명령과 그 출력을 함께 보여줄 때, `$` 프롬프트와 결과가 구분되도록 렌더합니다.
+
+**AI 요청 예시**  
+`명령 실행과 출력을 console 코드 블록으로 보여줘`
+
+```console
+$ ./gradlew assembleDebug
+> Task :app:assembleDebug
+BUILD SUCCESSFUL in 12s
+34 actionable tasks: 34 executed
+```
+
+### 테이블 열 정렬 {#table-align}
+
+**용도**  
+숫자는 오른쪽, 라벨은 왼쪽처럼 **열 정렬**로 표를 더 읽기 좋게 만들 때 사용합니다. 구분선의 콜론(`:`) 위치로 정렬을 지정합니다.
+
+**AI 요청 예시**  
+`수치 열은 오른쪽 정렬, 항목 열은 왼쪽 정렬한 표로 만들어줘`
+
+| 항목 | 값 | 비고 |
+|:-----|----:|:----:|
+| 빌드 시간 | 12s | 캐시 적용 |
+| 테스트 수 | 128 | 단위+통합 |
+| 실패 | 0 | 게이트 통과 |
+
+- `:---` 왼쪽 정렬
+- `---:` 오른쪽 정렬
+- `:--:` 가운데 정렬
 
 ## AI 프롬프트 템플릿 예시 {#ai-prompt-templates}
 
