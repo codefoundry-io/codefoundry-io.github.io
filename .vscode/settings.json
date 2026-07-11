@@ -26,5 +26,15 @@
   // Run tasks in macOS
   "terminal.integrated.profiles.osx": {
     "zsh": { "path": "/bin/zsh", "args": ["-l", "-i"] }
-  }
+  },
+  // Paste Image (mushan.vscode-paste-image): paste a clipboard image into a post
+  // and it is saved under that post's asset folder, with a publish-correct
+  // absolute /assets/... link inserted. Assumes this repo is opened as the
+  // VS Code workspace root (so ${projectRoot} == the site root).
+  "pasteImage.path": "${projectRoot}/assets/img/posts/${currentFileNameWithoutExt}",
+  "pasteImage.basePath": "${projectRoot}",
+  "pasteImage.prefix": "/",
+  // Prompt for a filename on paste → meaningful names improve alt text / SEO.
+  // Set to false if you prefer quick timestamp-named pastes.
+  "pasteImage.showFilePathConfirmInputBox": true
 }
