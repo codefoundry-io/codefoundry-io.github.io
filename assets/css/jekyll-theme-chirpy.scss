@@ -1,0 +1,124 @@
+---
+---
+
+@use 'abstracts/variables' with (
+  $theme: '{{ site.theme_mode }}'
+);
+
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
+
+/* append your custom style below */
+
+/*
+ * <details> / <summary> — 접이식 블록
+ *
+ * Chirpy 7.x 는 details/summary 에 대한 스타일 규칙이 없어 브라우저 기본값으로
+ * 렌더된다. 그 결과 접힌 상태의 summary 가 앞뒤 문단과 붙어 보이고, 클릭 가능한
+ * 요소로 읽히지 않는다. 아래 규칙은 여백 · 테두리 · hover 를 부여해 "눌러서 펼치는
+ * 카드" 로 보이게 한다.
+ *
+ * 색은 전부 테마 변수만 사용한다. 모든 변수가 _sass/themes/_light.scss 와
+ * _dark.scss 양쪽에 정의되어 있으므로 라이트/다크가 자동으로 따라온다.
+ *   --card-bg                 white          / #1e1e1e
+ *   --main-border-color       #f3f3f3        / rgb(44 45 45)
+ *   --card-hover-bg           #e2e2e2        / #464d51
+ *   --heading-color           #2a2a2a        / #cccccc
+ *   --prompt-info-icon-color  #0070cb        / #0075d1
+ */
+details {
+  margin: 1.5rem 0;
+  padding: 0 1rem;
+  border: 1px solid var(--main-border-color);
+  /* 라이트 모드에서 카드 배경(white)이 본문 배경과 같아 테두리만으로는 약하다.
+     왼쪽 액센트가 양쪽 테마 모두에서 블록의 시작점을 확실히 잡아준다. */
+  border-left: 3px solid var(--prompt-info-icon-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--card-bg);
+
+  > summary {
+    /* 부모 padding 을 상쇄해 hover 배경이 블록 폭 전체를 덮게 한다 */
+    margin: 0 -1rem;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--heading-color);
+    border-radius: var(--bs-border-radius);
+    transition: background-color 0.15s ease-in-out;
+
+    &:hover {
+      background: var(--card-hover-bg);
+    }
+  }
+
+  /* 접힌 상태: summary 아래 여백 없음 → 얇은 한 줄 카드 */
+  &:not([open]) > summary {
+    margin-bottom: 0;
+  }
+
+  /* 펼친 상태: 구분선을 그어 제목과 본문을 분리 */
+  &[open] > summary {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--main-border-color);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  /* 마지막 요소의 margin 붕괴로 아래 padding 이 사라지는 것을 막는다 */
+  > :last-child {
+    margin-bottom: 1rem;
+  }
+}
+
+/*
+ * .user-prompt — 사용자가 AI에게 실제로 입력한 프롬프트
+ *
+ * 글에서 AI에게 던진 프롬프트를 인용문(>)으로 적으면, 공식 문서 인용이나 일반
+ * 인용과 생김새가 같아 구분이 안 된다. Chirpy 의 prompt-* 박스와도 헷갈린다.
+ * 여는 큰따옴표 + 옅은 배경으로 "내가 입력한 문장"임을 드러낸다.
+ *
+ * 클래스 이름이 'prompt-' 로 시작하지 않는 것이 중요하다. Chirpy 의
+ * blockquote[class^='prompt-'] 셀렉터에 걸리면 색 박스 레이아웃이 덧씌워진다.
+ *
+ * 라이트/다크 대응 — 하드코딩 색 없음:
+ *   --inline-code-bg    rgb(25 25 28 / 5%) / rgb(255 255 255 / 5%)
+ *                       (배경 위에 얹는 반투명 틴트라 양쪽에서 자동으로 맞는다)
+ *   --heading-color     #2a2a2a            / #cccccc
+ *   --text-muted-color  #757575            / #868686
+ */
+blockquote.user-prompt {
+  position: relative;
+  margin: 1rem 0;
+  padding: 0.55rem 1rem 0.55rem 2.4rem;
+  border-left: 0; /* 기본 blockquote 의 왼쪽 선 제거 */
+  border-radius: var(--bs-border-radius);
+  background: var(--inline-code-bg);
+  /* 기본 인용문은 --blockquote-text-color(회색)이다. 프롬프트는 본문과 같은
+     농도로 두어 "흘려 읽는 인용"이 아니라 "입력한 문장"으로 읽히게 한다. */
+  color: var(--heading-color);
+  font-style: normal;
+
+  &::before {
+    content: '\201C'; /* 여는 큰따옴표 */
+    position: absolute;
+    top: 0.1rem;
+    left: 0.7rem;
+    font-size: 1.7rem;
+    line-height: 1;
+    color: var(--text-muted-color);
+  }
+
+  > p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  details > summary {
+    transition: none;
+  }
+}
