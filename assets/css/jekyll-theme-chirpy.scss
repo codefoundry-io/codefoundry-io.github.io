@@ -117,6 +117,42 @@ blockquote.user-prompt {
   }
 }
 
+/*
+ * 표 — 좁은 화면에서 자동 줄바꿈
+ *
+ * Chirpy 는 모든 셀에 white-space: nowrap 을 건다(_placeholders.scss 의
+ * %table-cell). 셀이 절대 접히지 않으므로 문장이 긴 표는 폭이 끝없이 늘어나고,
+ * .table-wrapper 의 overflow-x: auto 때문에 가로 스크롤로 밀려난다. 숫자나 키
+ * 같은 짧은 데이터 표에는 맞는 선택이지만, 문장이 들어가는 표는 폰에서 읽을
+ * 수가 없다.
+ *
+ * md(768px) 미만에서만 nowrap 을 풀어 셀이 스스로 접히게 한다. 데스크탑은
+ * 테마 기본 동작을 그대로 둔다 — `gemma-4-26b-a4b-it@q8_k_xl` 같은 식별자가
+ * 중간에서 끊기면 안 되기 때문이다.
+ *
+ * table-layout 은 건드리지 않는다. 브라우저 자동 배치가 내용이 긴 열에 폭을
+ * 더 주므로 fixed 로 균등 분배하는 것보다 결과가 낫다.
+ */
+/*
+ * 셀렉터는 테마와 똑같은 형태여야 한다. 미디어 쿼리는 명시도를 올려주지
+ * 않으므로, `.table-wrapper > table td`(0,1,2)로 쓰면 테마의
+ * `.table-wrapper > table tbody tr td`(0,1,4)에 그대로 진다. 명시도를 맞추고
+ * 파일 뒤쪽에 두어 이기게 한다.
+ */
+@media all and (max-width: 767px) {
+  .table-wrapper > table {
+    min-width: 0; /* 테마의 min-width: 100% 를 해제해야 축소된다 */
+    width: 100%;
+
+    thead th,
+    tbody tr td {
+      white-space: normal;
+      overflow-wrap: anywhere; /* 긴 코드·URL 도 강제로 접는다 */
+      padding: 0.4rem 0.6rem; /* 좁은 폭에서 좌우 여백 축소 */
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   details > summary {
     transition: none;
