@@ -11,7 +11,7 @@ comments: true
 math: false
 mermaid: true
 pin: false
-date: 2026-08-16 16:42:44 +0900
+date: 2026-08-16 17:33:18 +0900
 media_subpath: /assets/img/posts/2026-08-16-ai-terms-before-we-start/
 ---
 
@@ -55,7 +55,7 @@ LLM 자체가 무작위 장치인 것은 아니다. 가중치는 이미 고정�
 
 | 설정키 | 설명 | 값 |
 | :--- | :--- | :--- |
-| `temperature` | 확률 분포를 얼마나 평탄하게 펼칠지. 높을수록 확률이 낮은 토큰까지 뽑힌다 | `0` — 가장 확률 높은 토큰만 고른다 |
+| `temperature` | 확률 분포를 얼마나 평탄하게 펼칠지.<br>높을수록 확률이 낮은 토큰까지 뽑힌다 | `0` — 가장 확률 높은 토큰만 고른다 |
 | `top_k` | 확률 상위 몇 개를 후보로 둘지 | `1` — 후보를 하나로 줄인다 |
 | `top_p` | 누적 확률 상위 몇 %까지를 후보로 둘지 | `temperature` 가 `0`이면 영향이 없다 |
 | `seed` | 샘플링에 쓰는 난수의 시작값 | 샘플링을 한다면 매번 같은 값으로 |
@@ -64,8 +64,8 @@ LLM 자체가 무작위 장치인 것은 아니다. 가중치는 이미 고정�
 
 | 영향받는 요소 | 원인 |
 | :--- | :--- |
-| **Context** | 이전에 어떤 말을 했는지, 그리고 AI가 개인 메모리에 무엇을 적어뒀는지에 따라 실제로 모델에 들어가는 Input 자체가 달라지기 때문에 계속 다른 결과만 나온다. 즉, 첫 질문에만 똑같이 대답하고 단어 순서나 마침표 하나에도 영향을 받는다. |
-| **수치 오차** | 부동소수점 덧셈은 결합법칙이 성립하지 않는다. 커널 구현, 배치 크기, KV 캐시 압축에 따라 누적 순서와 정밀도가 달라지고 그 미세한 차이와 AI를 서빙하는 서버 상태에 따라 매번 다른 결과가 온다. |
+| **Context** | 이전에 어떤 말을 했는지, 그리고 AI가 개인 메모리에<br>무엇을 적어뒀는지에 따라 실제로 모델에 들어가는<br>Input 자체가 달라지기 때문에 계속 다른 결과만 나온다.<br>즉, 첫 질문에만 똑같이 대답하고<br>단어 순서나 마침표 하나에도 영향을 받는다. |
+| **수치 오차** | 부동소수점 덧셈은 결합법칙이 성립하지 않는다.<br>커널 구현, 배치 크기, KV 캐시 압축에 따라<br>누적 순서와 정밀도가 달라지고 그 미세한 차이와<br>AI를 서빙하는 서버 상태에 따라 매번 다른 결과가 온다. |
 
 **그래서 직접 확인해봤다**
 
@@ -87,8 +87,8 @@ _같은 질문의 답변인데 구성이 다르다_
 | 위치 | `hello` 세션 | `hi` 세션 |
 | :--- | :--- | :--- |
 | 답변 첫 문장 | As an **open weights** model | As an `"open weights"` model |
-| `Output:` 항목 | it generates **text only**. | it generates **text only**. **It cannot generate images or audio.** |
-| 마무리 문단 | **In short, Gemma 4 is a state-of-the-art AI model ...** | 없음 |
+| `Output:` 항목 | it generates **text only**. | it generates **text only**.<br>**It cannot generate images or audio.** |
+| 마무리 문단 | **In short, Gemma 4 is a state-of-the-art**<br>**AI model ...** | 없음 |
 
 답변의 길이와 구성 자체가 달라졌다. 사용자에게는 "같은 질문"이지만, 모델이 실제로 받은 Input은 앞선 대화가 통째로 붙은 **다른 Input**이었기 때문이다. 위 표의 **Context** 가 바로 이것이다.
 
