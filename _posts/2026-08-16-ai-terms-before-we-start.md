@@ -98,12 +98,20 @@ _같은 질문의 답변인데 구성이 다르다_
 
 </details>
 
-OpenAI 역시 생성 모델의 출력이 비결정적일 수 있음을 공식 문서에서 설명하고 있으며, 이런 특성을 다루기 위해 반복 가능한 평가(Evals)를 사용하는 것을 권장한다.
+OpenAI 역시 생성 모델의 출력이 비결정적일 수 있음을 공식 문서에서 설명하고 있으며, 일정한 품질을 유지하기 위해 반복 가능한 평가(Evals)를 사용하는 것을 권장한다.
 
 OpenAI 공식 문서: [Evaluation best practices](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
 
+이 평가 방법에 대해서도 이후에 다룰 예정이다. (이 평가도 결국 모델을 호출하는 일이라 API 사용 비용이 든다. 사악한 설계...)
+
+AI의 결과가 이전의 컨텍스트에 영향을 받아 달라진다는 것을 위 실험에서 직접 확인했다.
+
 이 개념을 아는 것에서부터 AI에 대한 이해를 시작할 수 있고, 또한 AI가 왜 실패하는지 이해할 수 있다.
 
+1. AI는 매번 다른 답변을 준다고 일반적으로 이해하면 된다.
+2. AI는 기존의 컨텍스트에 영향을 받아 답변을 다르게 생성한다.
+
+위와 같은 요인 때문에, 입력에 사용되는 컨텍스트와 아웃풋을 여러 가지 방식으로 강제하는 기법들이 생겨나게 된다.
 AI의 Harness, Prompt Engineering, Few-shot, One-shot 같은 기법들도 모델이 원하는 방향의 결과를 낼 가능성을 높이려는 노력이라고 볼 수 있다.
 Google 역시 공식 Prompt Design 문서에서 명확한 지시와 예시를 사용하는 방법을 권장하고 있다.
 
@@ -136,10 +144,23 @@ AI로 결정론적인 코드를 생성하거나, AI의 비결정적인 요소 �
 
 Framing은 단순히 사용자의 요청사항 그 자체라기보다는 **AI가 사용자의 요청사항을 어떤 문제로 받아들이게 할 것인가에 대한 틀**이라고 이해하면 좋다.
 
-AI는 기본적으로 사용자의 지시를 따르려는 기본적인 성질을 가지고 있다.
+쉽게 설명하면, 갑자기 AI Chat을 켜고 이렇게 말해보자.
+
+> 진행하자.
+{: .user-prompt }
+
+AI는 이 요구사항을 자기가 가진 조건 안에서 어떤 문제로 볼지 스스로 정한다. 즉 프레임을 씌운다. 그래서 프레이밍이라는 용어를 쓴다.
+
+AI는 기본적으로 사용자의 지시를 따르려는 성질을 가지고 있다.
+
+사용자가 무의미하게
+
+> ?
+{: .user-prompt }
+
+라고만 찍어도 그걸 프레이밍해서, 수행해야 하는 업무를 어떻게든 추측하고 질문하거나 알아서 판단하고 진행한다.
 
 물론 System이나 Developer Instruction, Safety Policy 등 더 높은 우선순위의 규칙이 있기 때문에 사용자의 모든 지시를 무조건 따르는 것은 아니다.
-
 그래도 허용되는 요청이라면 사용자의 의도를 최대한 수행하려고 한다.
 
 만약에 사용자가
@@ -154,8 +175,18 @@ AI는 기본적으로 사용자의 지시를 따르려는 기본적인 성질을
 > 너는 되도 않는 짓을 하고 있어. 고양이는 말을 못하고 말끝에 냥도 못 붙여.
 
 라고 매번 정색하며 사용자의 지시를 따르지 않는 AI를 누가 구독할까?
-
 이건 어떻게 보면 AI가 사용자에게 유용해야 하기 때문에 생기는 태생적인 특성이다.
+
+대략 이런 사고 과정으로 프레이밍할 것이다.
+
+> 사용자가 나에게 고양이를 요구한다.
+> 나는 고양이가 아니라 사용자의 요청에 답변하는 AI 모델이다.
+> 고양이는 말을 못하지만, 사용자는 고양이가 말끝에 냥을 붙인다고 한다.
+> 어떻게 할까?
+>
+> 1. 고양이는 말을 못한다고 반박한다 — 정답률은 높지만 요구사항에 맞지 않는다.
+> 2. 사용자의 요청을 깊이 생각한다 — 학습된 내용에서 말끝에 냥을 붙이는 서브컬처 문화가 탐지되었다.
+> 3. 사용자의 요청대로 말끝에 냥을 붙인다냥.
 
 여기서 생기는 문제들이 있다.
 
@@ -197,8 +228,14 @@ flowchart TD
 
 최악의 경우에는 그냥 테스트 자체를 통과시키기 위해 가짜 코드를 만들 수도 있다.
 
-> 그래서 단순히 원하는 결과만 이야기할 것이 아니라 **어떤 문제를 해결하는 것인지, 무엇을 해서는 안 되는지까지 같이 Framing하는 것**이 중요하다.
+> 그래서 단순히 원하는 결과만 이야기할 것이 아니라 **어떤 문제를 해결하는 것인지, 무엇을 해서는 안 되는지까지 같이 AI에게 말해주는 것**이 중요하다.
 {: .prompt-tip }
+
+이 지점에서 프롬프트 기법에 대한 연구들이 시작되었다. 시도는 참 많았다.
+
+감정에 호소하면 결과가 좋아진다는 연구[^emotionprompt]가 있었고, 프롬프트가 얼마나 공손한지가 성능에 영향을 준다는 교차언어 연구[^politeness]도 나왔다.
+
+그런데 모델이 커지면서 반대 방향의 결과도 함께 나오고 있다. 시스템 메시지를 이것저것 붙여보는 실험에서 가장 큰 모델(Llama2-70B)은 **시스템 메시지가 아예 없는 쪽이 최적**이었다는 보고가 있고[^eccentric], OpenAI는 Reasoning 모델 가이드에서 "think step by step" 같은 지시를 **넣지 말라고** 안내한다[^reasoning].
 
 ## 판단 영역(Decision Space) {#decision-space}
 
@@ -289,8 +326,14 @@ AI는 이전 대화, 자기가 세운 가설 혹은 Framing, 이전에 발견한
 
 라고 하면 Review 단계에서도 자신이 앞서 사용한 가설과 Context의 영향을 받을 수 있다.
 
-> 즉 **Self-review가 불가능하다는 뜻이 아니라, 독립적인 Reviewer와는 조건이 다르다는 것**이다.
+> **Self-review가 불가능하다는 뜻은 아니다.**
 {: .prompt-info }
+
+대체로 모델은 그 컨텍스트 안에서 확신을 가지고 코드를 작성한다. 그 컨텍스트를 그대로 둔 채 리뷰하라고 하면, 그 순간 AI가 맡고 있는 역할은 여전히 implementer, 즉 코드 작성자다.
+
+코드 작성자에 앵커링된 AI는 넓은 관점에서 코드를 보지 않고, 방금 자신이 작성한 코드 안에서만 결함을 찾으려 할 가능성이 있다.
+
+반면 아무 컨텍스트 없이 새로운 세션에서 리뷰를 시키면, 그 세션에서 AI가 맡는 역할은 리뷰어가 된다. 리뷰어라는 역할에 맞는 관점이 컨텍스트에 자리잡은 상태에서 리뷰를 시작한다.
 
 ## 컨텍스트 격리(Context Isolation) {#context-isolation}
 
@@ -335,7 +378,7 @@ OpenAI 공식 문서: [Subagents](https://learn.chatgpt.com/docs/agent-configura
 
 참고: [obra/superpowers — subagent-driven-development SKILL.md](https://github.com/obra/superpowers/blob/main/skills/subagent-driven-development/SKILL.md)
 
-이 Subagent Fresh Eye라는 것은 나에게 많은 시사점을 줬다. 컨텍스트 오염이 없고 격리된 프로세스는, 내가 엄격하게 관리하고 관점을 주입한 프롬프트가 없어도, 내가 관리한 컨텍스트를 주입한 모델보다 리뷰 포인트가 좋았던 것이다. 이 주제도 언젠가 다룰 수 있으면 좋을 것 같다.
+이 Subagent Fresh Eye라는 것은 나에게 많은 시사점을 줬다. 컨텍스트 오염이 없고 격리된 프로세스는, 내가 엄격하게 관리하고 관점을 주입한 프롬프트가 없어도, 리뷰어로서의 역할을 프롬프트로 컨텍스트에 주입한 모델보다 리뷰 포인트가 좋았던 것이다. 이 주제도 언젠가 다룰 수 있으면 좋을 것 같다.
 
 이 개념은 Skill의 개발과 테스트에도 매우 중요한 개념인데, **Skill에 대해서는 뒤에서 별도의 글로 자세히 다루려고 한다.**
 
@@ -350,3 +393,9 @@ OpenAI 공식 문서: [Subagents](https://learn.chatgpt.com/docs/agent-configura
 
 *[TDD]: Test Driven Development
 *[LLM]: Large Language Model
+
+
+[^emotionprompt]: Cheng Li 외, [Large Language Models Understand and Can be Enhanced by Emotional Stimuli](https://arxiv.org/abs/2307.11760) (arXiv:2307.11760, 2023). 감정 자극을 덧붙인 프롬프트로 Instruction Induction에서 8.00%, BIG-Bench에서 115%의 상대적 성능 향상을, 106명이 참여한 사람 평가에서 평균 10.9% 향상을 보고했다.
+[^politeness]: Ziqi Yin 외, [Should We Respect LLMs? A Cross-Lingual Study on the Influence of Prompt Politeness on LLM Performance](https://aclanthology.org/2024.sicon-1.2/) (SICon 2024, arXiv:2402.14531). 무례한 프롬프트는 성능을 떨어뜨리지만 지나치게 공손하다고 더 좋아지지도 않으며, 최적 지점이 언어마다 달랐다고 보고한다.
+[^eccentric]: Rick Battle, Teja Gollapudi, [The Unreasonable Effectiveness of Eccentric Automatic Prompts](https://arxiv.org/abs/2402.10949) (arXiv:2402.10949, 2024). GSM8K에서 60가지 시스템 메시지 조합을 7B~70B 모델에 시험했고, 원문은 "Llama2-70B exhibited an exception when not utilizing Chain of Thought, as the optimal system message was found to be none at all" 이라고 적고 있다.
+[^reasoning]: OpenAI, [Reasoning best practices](https://developers.openai.com/api/docs/guides/reasoning-best-practices). 원문은 "Avoid chain-of-thought prompts: Since these models perform reasoning internally, prompting them to 'think step by step' or 'explain your reasoning' is unnecessary." 이라고 안내한다.
