@@ -342,6 +342,9 @@ _출처: Anthropic Claude Platform 문서 [Context windows](https://platform.cla
 
 계산량도 같이 는다. 트랜스포머의 자기어텐션은 입력 토큰끼리 전부 짝을 지어 계산하기 때문에, 입력을 읽는 비용이 입력 길이의 제곱에 비례한다. 원 논문 "Attention Is All You Need"(Vaswani 외, 2017)의 표 1에 층당 복잡도가 $O(n^2 \cdot d)$로 적혀 있다.[^attention] 답을 생성할 때도 토큰 하나를 낼 때마다 지금까지의 컨텍스트 전체를 참조한다. 컨텍스트가 두 배면 읽는 비용은 네 배, 생성 비용은 두 배가 되는 구조다.
 
+![Longformer 논문 그림 1. 입력 길이(seq len)에 따른 시간(ms/batch)과 메모리(MiB). Full self-attention 파란 선이 길이가 늘수록 위로 꺾이며 메모리 축에서는 측정 범위를 벗어난다](longformer-fig1.png){: w="1600" h="693" .shadow }
+_출처: Beltagy, Peters, Cohan, "Longformer: The Long-Document Transformer" (2020), Figure 1, [arXiv:2004.05150](https://arxiv.org/abs/2004.05150). 파란 선(Full self-attention)이 일반 트랜스포머로, 입력 길이가 늘수록 시간과 메모리가 제곱으로 늘다가 GPU 메모리가 바닥나 측정이 끊긴다._
+
 ```mermaid
 flowchart TB
   subgraph S["한 세션에서 이어서 (컨텍스트가 쌓임)"]
