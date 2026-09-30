@@ -11,7 +11,7 @@ comments: true
 math: true
 mermaid: true
 pin: false
-date: 2026-09-30 21:36:42 +0900
+date: 2026-09-30 21:53:36 +0900
 media_subpath: /assets/img/posts/2026-09-30-claude-subagent-superpowers/
 ---
 
