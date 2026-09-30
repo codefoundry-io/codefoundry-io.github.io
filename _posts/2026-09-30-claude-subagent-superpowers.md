@@ -342,11 +342,6 @@ _출처: Anthropic Claude Platform 문서 [Context windows](https://platform.cla
 
 계산량도 같이 는다. 트랜스포머의 자기어텐션은 입력 토큰끼리 전부 짝을 지어 계산하기 때문에, 입력을 읽는 비용이 입력 길이의 제곱에 비례한다. 원 논문 "Attention Is All You Need"(Vaswani 외, 2017)의 표 1에 층당 복잡도가 $O(n^2 \cdot d)$로 적혀 있다.[^attention] 답을 생성할 때도 토큰 하나를 낼 때마다 지금까지의 컨텍스트 전체를 참조한다. 컨텍스트가 두 배면 읽는 비용은 네 배, 생성 비용은 두 배가 되는 구조다.
 
-이걸 실측한 그림이 있다. Longformer 논문(Beltagy 외, 2020)의 그림 1은 입력 길이를 1천에서 1만 6천 토큰까지 늘려 가며 일반 트랜스포머의 완전 자기어텐션(Full self-attention, 파란 선)이 쓰는 시간과 메모리를 잰 것이다. 길이가 늘수록 곡선이 직선이 아니라 위로 꺾이고, 메모리는 1만 토큰을 넘기면서 급격히 치솟다가 GPU 메모리가 바닥나 측정이 끊긴다.[^longformer] 나머지 선은 이 문제를 피하려고 논문이 제안한 방식이라 여기서는 무시해도 된다.
-
-![Longformer 논문 그림 1. 입력 길이(seq len)에 따른 시간(ms/batch)과 메모리(MiB). Full self-attention 파란 선이 길이가 늘수록 위로 꺾이며 메모리 축에서는 측정 범위를 벗어난다](longformer-fig1.png){: w="1600" h="693" .shadow }
-_출처: Beltagy, Peters, Cohan, "Longformer: The Long-Document Transformer" (2020), Figure 1. 파란 선(Full self-attention)이 일반 트랜스포머다. "the full self-attention mechanism that runs out of memory for long sequences on current GPUs."_
-
 ```mermaid
 flowchart TB
   subgraph S["한 세션에서 이어서 (컨텍스트가 쌓임)"]
@@ -1092,5 +1087,4 @@ Codex, Gemini, Antigravity 같은 다른 모델 계열의 CLI에 질문을 한 �
 [^turn-count]: Superpowers v6.4.2 [subagent-driven-development/SKILL.md](https://github.com/obra/superpowers/blob/main/skills/subagent-driven-development/SKILL.md), "Model Selection" 절.
 [^unattended]: Claude Platform 문서 [Prompting Claude Opus 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), "Unattended agentic runs" 절.
 [^auto-delegation]: Claude Code 공식 문서 [Subagents](https://code.claude.com/docs/en/sub-agents), "Understand automatic delegation" 절.
-[^longformer]: Beltagy, Peters, Cohan, "Longformer: The Long-Document Transformer" (2020), Figure 1: "Runtime and memory of full self-attention and different implementations of Longformer's self-attention (...) unlike the full self-attention mechanism that runs out of memory for long sequences on current GPUs." [arXiv:2004.05150](https://arxiv.org/abs/2004.05150)
 [^attention]: Vaswani et al., "Attention Is All You Need" (2017), Table 1: Self-Attention complexity per layer $O(n^2 \cdot d)$. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
