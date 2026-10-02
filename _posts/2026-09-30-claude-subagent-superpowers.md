@@ -19,11 +19,12 @@ media_subpath: /assets/img/posts/2026-09-30-claude-subagent-superpowers/
 Claude Code를 쓰다 보니 생각보다 느리고 토큰 소모량이 많았다.
 
 그래서 개인적으로 알아보니 주요 원인은 Claude Code의 서브에이전트 스폰 방법이었다.
-Claude Code에서는 메인 에이전트가 일부 작업을 **서브에이전트**에게 나눠 주는데, 서브에이전트는 "얼마나 깊게 생각할지"를 정하는 **effort** 값을 메인에게서 그대로 물려받는다.
-그래서 메인을 가장 높은 단계인 `xhigh`로 두고 쓰면, 파일 몇 개 검색하는 서브에이전트도 `xhigh`로 돈다.
-검색에 깊은 생각은 필요 없는데 시간과 비용은 깊은 생각만큼 나간다.
+Claude Code에서는 메인 에이전트가 일부 작업을 **서브에이전트**에게 위임할 수 있는데, 서브에이전트는 "얼마나 깊게 생각할지"를 정하는 **effort** 값을 메인에게서 그대로 상속받는다.
+그래서 메인을 가장 높은 단계인 `xhigh`로 두고 쓰면, 파일 몇 개 검색하는 서브에이전트도 `xhigh`로 수행되는 것이었다.
+예를 들면 서브에이전트 위임은 주로 검색과 탐색을 맡기고 요약을 받는 데 쓰이는데,
+effort가 크게 필요 없는 행동에 쓸데없이 높은 effort를 할당하면서 시간과 비용이 낭비되는 것이다.
 
-이 글은 그 낭비를 막으려고 서브에이전트 프리셋 7종을 만들어 공개하면서 "이게 왜 좋은지"를 설명한 내용을 정리한 것이다.
+이 글은 그 낭비를 막으려고 서브에이전트 프리셋 7종을 만들며 "이게 왜 좋은지"를 조사한 내용을 정리한 것이다.
 effort가 비용과 시간을 얼마나 낭비하는지, 프리셋을 나눈 근거, 그리고 Superpowers에 연결하는 방법까지 다룬다.
 
 > Claude Code CLI 기준이며, 2026년 9월 말 공식 문서와 Superpowers v6.4.2(2026-09-25)를 기준으로 작성했습니다.
@@ -50,14 +51,21 @@ flowchart LR
 ```
 
 서브에이전트는 AI가 등장한 후에도 조금 지나서 등장한 개념으로 대부분은 그냥 메인 에이전트로 작업을 할 것이다.
-대부분 서브에이전트를 쓰는 이유는 두 가지다.
+서브에이전트를 사용하는 장점은 아래와 같다.
 
-- **컨텍스트 분리**: 테스트 로그나 검색 결과처럼 양이 많은 출력은 서브에이전트 안에서 소비되고, 메인에는 요약만 돌아온다. 이 방법으로 메인 컨텍스트를 아낄 수 있다.
-- **역할별 설정**: 서브에이전트마다 모델, 도구, effort를 따로 정할 수 있다. 이게 비용에 직결되는데 글의 주제가 바로 이 부분이다.
+- **컨텍스트 오염 방지**: 인터넷 검색 결과, 로그, 코드 탐색 결과 같은 것을 메인 에이전트가 읽으면 컨텍스트가 오염되며 낭비된다.
+  LLM은 텍스트 기반이기 때문에 읽는 모든 것들이 컨텍스트에 쌓인다. 특히 인터넷 검색 결과를 메인 에이전트가 그대로 받으면 프롬프트 인젝션(웹 페이지 같은 외부 텍스트에 숨긴 문구로 AI의 지시를 덮어쓰는 공격)을 당할 수도 있다.[^prompt-injection]
+  따라서 웹 검색이나 외부 문서를 읽는 일은 서브에이전트에게 위임해서 요약한 정보를 받는 게 안전하다.
+- **메인 컨텍스트 절약**: 작업을 위임하고 결과만 요약해서 받으면 메인 컨텍스트를 아끼며 작업을 이어갈 수 있다.
+  `/compact`는 대화 기록을 요약으로 바꾸는 것이라 결과적으로 정보를 버리는 행위다. 그래서 장기 작업 시에는 메인 컨텍스트를 최대한 아끼면서 진행하는 게 좋다.[^compaction]
+- **독립적인 컨텍스트**: 서브에이전트는 별도의 설정을 하지 않는 한 메인 컨텍스트와 문맥을 공유하지 않는다. 이것이 장점이 되는 리뷰 같은 케이스에 유용하다.
+- **비용 절약**: 서브에이전트를 스폰할 때 모델, 도구, effort를 따로 정할 수 있다. 반면 메인 에이전트의 모델을 바꾸면 서버에 캐싱된 컨텍스트를 처음부터 다시 처리한다. 모델마다 캐시가 따로 있기 때문이다.[^model-cache]
+  작업의 난이도에 따라 서브에이전트에게 위임하면 메인의 캐시를 유지하면서 작업마다 모델과 effort를 다르게 해 비용을 직접 결정할 수 있다.
 
-Claude Code에는 기본 서브에이전트가 세 개 들어 있지만 별 소용이 없다.
-이 설정은 외부에 구독제로 CLI를 사용하는 사람들에게 거의 차이가 없지만, 비즈니스 요금제를 쓰면 너무 낭비가 크다. 다만 대부분의 사용자들은 구독 시스템을 쓰기 때문에
-거의 알려지지 않은 문제점이다.
+Claude Code에는 기본 서브에이전트가 세 개 들어 있지만, 이 에이전트들은 메인 컨텍스트 오염을 방지하기 위한 용도이지 비용 절감과는 관련이 없다.
+effort가 설정되어 있지 않아서 메인 에이전트의 effort를 상속받아서 호출된다.
+이 설정은 외부에 구독제로 CLI를 사용하는 사람들에게 거의 차이가 없지만, 비즈니스 요금제를 쓰면 너무 낭비가 크다. 
+다만 대부분의 사용자들은 구독 시스템을 쓰기 때문에 거의 알려지지 않은 문제점이다.
 
 | 서브에이전트 | 용도 | 모델 |
 |:--|:--|:--|
@@ -69,7 +77,7 @@ Claude Code에는 기본 서브에이전트가 세 개 들어 있지만 별 소�
 그냥 읽기 · 요약 · grep 같은 단순한 작업도 내가 선택한 메인 에이전트 비용으로 지불해야 하는가?
 
 Claude에서 서브에이전트는 Markdown 파일 하나로 정의할 수 있고 모델과 effort를 미리 정의하고 사용할 수 있다.
-위쪽 frontmatter에 이름, 설명, 모델, effort를 적고, 본문에는 시스템 프롬프트를 적는다. 본문은 비워두고 그때그때 메인 에이전트가 선택하도록 하는 게 범용성이 높아진다.
+위쪽 frontmatter에 이름, 설명, 모델, effort를 적고, 본문에는 시스템 프롬프트를 적는 형태이지만, 본문은 비워 두고 그때그때 메인 에이전트가 서브에이전트를 스폰할 때 채우도록 하는 게 범용성이 높아진다.
 
 ## effort는 메인에서 상속된다 {#effort-inheritance}
 
@@ -79,10 +87,11 @@ Claude에서 서브에이전트는 Markdown 파일 하나로 정의할 수 있�
 ### effort란
 
 effort는 Claude가 답을 내는 데 **토큰을 얼마나 쓸지(Thinking)** 정하는 값이다.
-`low`, `medium`, `high`, `xhigh`, `max` 다섯 단계가 있다.
+Claude Code에는 보통 `low`, `medium`, `high`, `xhigh`, `max` 다섯 단계가 있다.
 
 중요한 점은 effort가 <mark>토큰 단가를 바꾸지 않는다</mark>는 것이다.
-단가는 모델별로 고정이고, effort가 높을수록 더 오래 생각한다. 이 Thinking은 output token에 해당하는 비중 높은 비용을 차지한다. 또한 생각할수록 도구를 더 많이 부르고, 출력도 길어진다.
+단가는 모델별로 고정이지만 effort가 높을수록 Thinking을 많이 하게 된다.
+이 Thinking은 출력 토큰 단가로 계산되는데, 출력 단가는 입력의 5배다. 또한 생각할수록 도구를 더 많이 부르고, 출력도 길어진다.
 그래서 비용과 시간이 **같이** 늘어난다.
 그런데 effort가 높아질수록 결과가 좋아지느냐?
 모델별 가격 차이에 따라서 한 번에 성공하면 가성비가 좋고 여러 번 실패해도 그냥 재수행으로 가성비가 높아지는 경계가 분명히 존재한다.
@@ -131,6 +140,7 @@ flowchart TD
 ### 단가
 
 먼저 모델별 단가다. (1M 토큰당 USD. Thinking token은 출력에 해당하는 가격으로 책정)
+입력에 비해 출력이 5배인 게 보인다.
 
 | 모델 | 입력 | 출력 |
 |:--|--:|--:|
@@ -150,6 +160,8 @@ Terminal-Bench 4.0, GDPval-AA, Humanity's Last Exam 등 10개 평가를 에이�
 같은 모델을 effort만 바꿔 다섯 번 돌린 결과가 공개돼 있어서, effort가 토큰과 시간을 얼마나 바꾸는지 비교하기 좋다.
 수치는 2026-10-01 모델 페이지 기준이다. 첫 응답 시간은 측정할 때마다 조금씩 바뀌는 실측값이다.
 다만 종합 점수라서 "이 버그를 고칠 수 있나" 같은 특정 작업의 성공 여부까지 말해 주지는 않는다.
+
+다만 금액의 차이에 집중하자.
 
 | effort | 지수 | 출력 토큰 | 출력 비용 | xhigh 대비 | 1점 더 올리는 비용 | 첫 응답까지 |
 |:--|--:|--:|--:|--:|--:|--:|
@@ -185,9 +197,12 @@ Sonnet 5.5는 high까지 1점당 비용이 Opus의 low → medium 구간보다 �
 - Opus 5.5 `medium`: 지수 51, 출력 비용 $760
 
 <mark>싼 모델로 바꿔도 effort가 xhigh 그대로면, 비싼 모델의 medium보다 더 비쌀 수 있다.</mark>
-모델만 고르고 effort를 놓치면 절약이 안 된다. Superpowers 이야기를 할 때 이 부분이 다시 나온다.
+즉, 모델만 고르고 effort를 놓치면 내 생각과 달리 싼 모델을 쓰는데도 시간만 들고 금액이 역전되며 효과도 적을 수 있다.
 
 ### Fable 5.1의 effort별 토큰과 시간
+
+> Fable 5.1은 Opus 5.5보다 한 세대 이전(5.1)의 모델입니다. 아래 비교는 이 글을 쓴 2026년 10월 시점의 일시적인 결과이고, 개인적으로는 Fable 5.5가 나오면 차이가 분명해질 것으로 봅니다.
+{: .prompt-warning }
 
 Fable 5.1은 가장 비싼 모델이다. 출력 비용은 출력 단가 $50으로 계산했다.
 
@@ -205,6 +220,7 @@ effort 이름이 같다고 같은 양을 생각하는 게 아니라서, 두 모�
 
 - **low**: Fable 5.1이 47점으로 Opus 5.5(42점)보다 높다. Anthropic도 Fable 5.1 가이드에서 "Opus · Sonnet을 높은 effort로 돌릴 자리라면, Fable 5.1 low가 과제당 비용은 비슷하면서 점수는 더 높은 경우가 많다"고 적었다.[^fable-prompting]
 - **medium 이상**: Opus 5.5가 앞선다. `xhigh` 기준 Fable 5.1은 지수 53에 $6,000, Opus 5.5는 지수 56에 $2,000이다.
+  현시점에서는 Fable 5.5가 나올 때까지 Opus 5.5가 가성비가 좋다.
 
 출력 속도도 초당 48~70토큰으로 Opus 5.5보다 느리다.
 **가장 비싼 모델이 모든 일에 가장 좋은 선택은 아니다.** 다만 Fable이 "못한 모델"이라는 뜻은 아니다. Anthropic은 Fable 5.1을 일반 고객이 쓸 수 있는 가장 강한 모델로 두고, Opus 5.5로 안 풀리는 일에 쓰라고 안내한다. 이 이야기는 [메인 에이전트 선택](#choosing-main)에서 다시 한다.
@@ -259,7 +275,7 @@ README는 "에이전트가 플랜에서 벗어나지 않고 두어 시간 자율
 ### 기본 흐름
 
 ```mermaid
-flowchart LR
+flowchart TD
   B[brainstorming<br>스펙 작성 + 셀프 리뷰] --> H0([사람: 스펙 리뷰])
   H0 --> W[using-git-worktrees<br>격리 브랜치]
   W --> P[writing-plans<br>플랜 작성 + 셀프 리뷰]
@@ -295,9 +311,24 @@ Superpowers는 실행 중에는 사람에게 묻지 않는다. "계속할까요?
 - **Subagent-driven**: 태스크마다 새 구현자와 리뷰어를 띄운다. 가장 꼼꼼하지만 태스크마다 새 컨텍스트 비용이 든다.
 - **Native**: 메인이 모든 태스크를 직접 구현하고, 마지막에 가장 강한 모델로 브랜치 전체를 한 번 리뷰한다. 가장 싸고 빠르다. Superpowers는 중간 티어 세션 모델로도 잘 돈다고 설명한다.
 
+<details markdown="1">
+<summary>더 보기 — Subagent-driven과 Native, 무엇이 비싼가</summary>
+
+`subagent-driven-development` 스킬은 inline(Native) 실행과의 차이를 이렇게 적었다.[^sdd-skill]
+
+> Costs a fresh context per task and per review; inline costs one context plus one final reviewer
+
+- **문맥 전달 비용**: 서브에이전트는 메인의 대화를 모른다. 그래서 태스크마다 메인이 태스크 설명과 필요한 맥락을 프롬프트로 다시 넘기고, 받는 쪽도 필요한 파일을 다시 읽는다. 구현자와 리뷰어가 모두 새 컨텍스트라 이 비용이 리뷰어에게도 반복된다.
+- **여러 차례의 리뷰**: 태스크마다 스펙 준수 + 코드 품질 리뷰가 붙는다. 문제가 나오면 수정 후 범위를 좁힌 재리뷰가 이어지고, 수정은 최대 5회까지 간다(4회차부터는 더 강한 모델의 새 구현자). 마지막에 브랜치 전체 리뷰가 한 번 더 있다. Native는 마지막 리뷰 한 번이다.
+- **얻는 것**: 태스크마다 새 컨텍스트라 앞 태스크의 흔적에 오염되지 않고, 문제를 태스크 단위로 일찍 잡는다.
+
+스킬의 선택 기준은 단순하다. 태스크가 대부분 독립적이면 Subagent-driven, 사람이 inline을 고르거나 서브에이전트 도구가 없으면 `executing-plans`(Native)다. 결국 비용을 더 내고 리뷰를 더 자주 받을지의 선택이다. 이 글의 프리셋은 그 리뷰 비용을 줄이는 쪽이다.
+
+</details>
+
 ### 플랜 작성 방식
 
-writing-plans는 코드를 다 적지 않는다(v6.4.2부터). 플랜에는 구현자가 혼자 정할 수 없는 **결정**만 기록한다.
+writing-plans는 코드를 다 적지 않는다(v6.4.2부터). 플랜에는 코드 구현자(서브에이전트)가 혼자 정할 수 없는 **결정**만 기록한다.
 
 | 스텝 종류 | 플랜에 적는 것 |
 |:--|:--|
@@ -306,8 +337,9 @@ writing-plans는 코드를 다 적지 않는다(v6.4.2부터). 플랜에는 구�
 | 검증 스텝 | 실행할 명령과 통과했을 때의 출력 |
 | 다른 태스크 참조 | 그 태스크의 Interfaces 블록 (코드를 반복하지 않음) |
 
-코드 본문은 시그니처와 테스트만으로 정해지지 않는 알고리즘이거나, 스펙이 문구를 못박은 경우에만 적는다.
-플랜의 독자도 "맥락이 전혀 없는 엔지니어"에서 "인터페이스와 테스트만 알면 관용적인 코드를 쓸 수 있는 엔지니어"로 바뀌었다.
+코드 본문은 시그니처와 테스트만으로 정해지지 않는 알고리즘이거나, 스펙이 코드 전체를 적어야 한다고 명시한 경우에만 적는다.
+플랜이 상정하는 코드 구현자도 예전과 다르게 "맥락이 전혀 없는 엔지니어"에서 "인터페이스와 테스트만 알면 관용적인 코드를 쓸 수 있는 엔지니어"로 바뀌었다.
+모델의 성능이 좋아지며 굳이 메인 에이전트에서 다 적을 필요 없다고 판단한 것 같다.
 
 릴리스 노트에 따르면 Opus 5.5 같은 모델이 플랜을 쓰다가 프로젝트 전체를 구현해 버리는 문제가 있었다고 한다.
 새 방식에서는 플랜 작성 시간이 1/4, 토큰이 약 1/3로 줄었고, 이렇게 쓴 플랜도 Sonnet 5에서 기존의 전체 코드 플랜과 같은 결과(결함을 심어둔 검증 9/9 통과)를 냈다.
@@ -332,10 +364,10 @@ flowchart LR
   VG -->|다음| R
 ```
 
-- **RED**: 원하는 동작을 보여주는 테스트를 하나만 쓴다. 실행해서 **실패하는 것을 직접 본다.** 스킬은 "실패하는 걸 안 봤으면 그 테스트가 맞는 걸 검사하는지 모른다"고 말한다.
+- **RED**: 원하는 동작을 검사하는 테스트를 먼저 쓴다. 아직 구현이 없으니 테스트는 실패한다. 실행해서 **실패하는 것을 직접 본다.** 스킬은 "실패하는 걸 안 봤으면 그 테스트가 맞는 걸 검사하는지 모른다"고 말한다.
 - **GREEN**: 그 테스트를 통과시킬 최소한의 코드만 쓴다. 미리 일반화하지 않는다.
-- **REFACTOR**: 테스트가 초록인 상태를 유지하며 정리하고 커밋한다.
-- **초록의 기준은 프로젝트 전체 테스트다.** 태스크가 파일 하나를 지목해도 그 파일만 돌리지 않는다. v6.4.1 릴리스 노트에 따르면 12번 중 11번은 지목된 파일만 돌려서 옆 파일이 깨진 걸 못 봤고, 그래서 "프로젝트 테스트 명령을 돌리고 내가 안 만든 실패까지 이름을 대라"로 바뀌었다.
+- **REFACTOR**: 테스트가 GREEN인 상태를 유지하며 정리하고 커밋한다.
+- **GREEN의 기준은 프로젝트 전체 테스트다.** 태스크가 파일 하나를 지목해도 그 파일만 돌리지 않는다.
 
 이 규칙이 프리셋과 연결된다. 플랜에 테스트 단언이 적혀 있고 구현자가 RED부터 시작하면, 싼 모델이 틀려도 테스트가 그 자리에서 잡는다. `tier-cheap`을 구현자로 쓸 수 있는 근거가 바로 이것이다.
 
@@ -352,7 +384,8 @@ flowchart LR
 
 ### 컨텍스트가 쌓이면 왜 느려지고 비싸지나
 
-이 방식의 이점은 리뷰만이 아니다. **컨텍스트가 쌓이지 않는다.** 왜 그게 비용과 시간이 되는지부터 보자.
+이 방식의 이점은 리뷰만이 아니다. **메인 컨텍스트는 요약만 받는다.**
+또한, **작업이 끝난 서브에이전트는 버린다.** 왜 그게 비용과 시간이 되는지부터 보자.
 
 Claude Code는 요청마다 대화 전체를 다시 보낸다. 공식 문서의 설명이다.[^full-conversation]
 
@@ -389,7 +422,8 @@ flowchart TB
 
 이게 비용과 시간이 되는 경로는 세 가지다.
 
-1. **입력 토큰은 매 요청 과금된다.** 캐시에 맞으면 싸지만 공짜는 아니다. Opus 5.5 기준 캐시 읽기는 입력 단가의 5%($0.20/MTok)다. 200k 토큰이 쌓인 세션에서 한 줄 질문을 던지면 그 200k를 매번 다시 읽는 값을 낸다.
+1. **입력 토큰은 매 요청 과금된다.** 물론 서버의 캐시에 히트하면 싸지만 공짜는 아니다. 또한 비용을 아끼려고 작업에 따라 메인 에이전트의 모델을 바꿀 때마다 캐시가 날아간다.[^model-cache]
+   Opus 5.5 기준 캐시 읽기는 입력 단가의 5%($0.20/MTok)다. 200k 토큰이 쌓인 세션에서 한 줄 질문을 던지면 그 200k를 매번 다시 읽는 값을 낸다.
 2. **캐시는 시간이 지나면 전부 다시 처리한다.** 구독은 1시간, API 키는 5분이 지나면 캐시가 사라지고, 다음 요청은 전체 컨텍스트를 정가로 다시 처리한다. 프롬프트 캐싱 문서의 예시로 200k 문서에 50토큰 질문을 하면, 캐시 적중 시 20,050토큰 값, 미적중 시 200,050토큰 값이다. 
 3. **처리 시간도 입력 길이를 따라간다.** 모델은 답을 내기 전에 입력 전체를 읽어야 한다. 프롬프트 캐싱 문서가 캐싱의 효과로 "긴 문서에서 첫 토큰까지의 시간이 개선된다"고 적는 것 자체가, 입력이 길수록 첫 응답이 늦어진다는 뜻이다.
 
@@ -551,6 +585,12 @@ Subagent-driven 방식에서 태스크가 여러 파일에 걸쳐 구현자가 S
 
 서브에이전트 프리셋을 정하기 전에 메인부터 정해야 한다.
 메인은 사람과 대화하고, 플랜을 쓰고, 서브에이전트를 부르고 결과를 합친다.
+개인적으로 메인 에이전트의 작업 능력은 두 가지 기준으로 본다.
+
+1. **터미널(CLI) 작업과 도구 호출(tool call)을 잘하는가.** Terminal-Bench가 이걸 잰다. 터미널 · 명령줄 컨테이너 환경에서 하는 실제 작업 66개로 구성된다.[^opus-sc]
+2. **과설계를 하지 않는가.** 즉, 사용자가 요구하거나 명시하지 않은 판단을 추가하지 않는 것이다. FrontierCode가 가장 가깝다. 실제 오픈소스 PR에서 만든 과제 150개로, 고친 코드가 사람 손 없이 머지될 수 있는지를 보고 요청 범위 밖의 수정은 좋은 수정이어도 감점한다.[^opus-sc]
+
+아마 여기에 더한다면 장기 작업 수행 능력이지 않을까 싶다.
 
 비교는 Anthropic 공식 자료(출시 페이지, 시스템 카드, 플랫폼 문서)를 중심으로 하고, 벤치마크 운영처가 직접 공개한 값만 더했다. 모델마다 다른 출처나 다른 벤치마크 버전을 섞지 않도록, 여러 모델을 한 표에 놓을 때는 한 출처에서 가져왔다. 여러 출처의 점수를 옮겨 모은 집계 사이트, 고객 인용, 한두 번 돌린 개인 실험은 근거에서 뺐다.
 
@@ -571,6 +611,7 @@ Subagent-driven 방식에서 태스크가 여러 파일에 걸쳐 구현자가 S
 ### 먼저, Anthropic은 두 모델을 어떻게 두나
 
 벤치마크를 보기 전에 공식 위치부터 짚어 둔다. 벤치마크만 보면 Fable 5.1이 Opus 5.5보다 못해 보이는데, 공식 문서는 그렇게 말하지 않는다.
+또한 이는 글을 쓴 시점의 문제이기도 하다. Fable 5.5가 나오면 이 글도 업데이트할 예정이다.
 
 - **Fable 5.1**: "Anthropic's most capable model open to all customers." 일반 고객이 쓸 수 있는 가장 강한 모델이다.[^choosing]
 - **Opus 5.5**: 대부분의 작업을 여기서 시작하라고 한다. 모델 선택 가이드의 순서는 "Opus 5.5로 구현 → effort를 xhigh · max까지 올려도 어려운 추론이나 장기 에이전트 작업이 모자라면 Fable 5.1로 이동"이다.[^choosing]
@@ -639,6 +680,9 @@ Opus 5.5의 평균은 전작 Opus 5보다 낮지만, 두 모델의 오차 범위
 
 > On long tasks with several parts, Claude Opus 5.5 keeps the user updated as it works, and some of those updates end the turn with text rather than a tool call. An unattended agent loop that treats such a turn as the end of the task stops running there.
 
+오히려 나는 이런 면이 좋기도 하다. Fable이 말없이 과설계한 것을 수습하는 것보다 중간중간 확인하는 편이 낫다.
+특히 장기 작업을 목표로 나온 모델들은 출력을 줄이는 건지, 어차피 안 볼 거라고 생각하는 건지 브리핑이 없는 것 같은 느낌이 든다. 실제로 Fable 5.1 공식 문서도 긴 작업 중 진행 보고를 Fable 5보다 덜 쓴다고 적었다.[^fable-new]
+
 가이드는 Opus 5.5가 일이 남았는데도 턴을 끝내는 네 가지 방식을 꼽는다. 한 일을 길게 요약하고 "다음은 이걸 하겠다"로 끝내기, "원하시면 계속하겠다"고 묻기, 막지도 않는 결정 목록을 사용자에게 넘기기, 마일스톤이 끝났으니 보고할 때라고 판단하기.
 
 그런데 이건 Opus만의 버릇이 아니다. Fable 5.1 프롬프트 가이드도 "Finish the whole task" 절에서 같은 현상을 적었다.[^fable-prompting]
@@ -654,6 +698,8 @@ Fable 5.1 가이드에는 주의할 점이 하나 더 있다. 열린 기능 구�
 ### 3. 서브에이전트를 얼마나 잘 다루나
 
 "서브에이전트를 조율하는 능력"에 가장 가까운 공개 벤치마크는 **MCP Atlas**(Scale AI)다.
+서브에이전트를 운영한다는 건 결국 사용자가 연속적으로, 때로는 중구난방으로 내리는 명령을 받아
+결과를 모으고 운영하는 일이니 MCP 도구 조율과 비슷하다.
 여러 MCP 서버에 흩어진 도구를 찾아서, 맞는 인자로 부르고, 실패하면 복구하고, 결과를 합쳐 답을 내는 여러 단계 도구 조율을 잰다. 서브에이전트를 부르는 것도 결국 Agent라는 도구를 조율하는 일이라, 이 능력과 가장 가깝다.
 
 Scale AI 공식 리더보드의 값이다.[^mcp-atlas]
@@ -672,7 +718,7 @@ Scale은 오차 범위가 겹치는 모델에 같은 순위를 준다. Fable 5.1
 <details markdown="1">
 <summary>더 보기 — 시스템 카드의 멀티 에이전트 평가 · 학계 벤치마크</summary>
 
-Fable 5.1 시스템 카드에는 멀티 에이전트 평가가 있다. 바이너리와 문서만 보고 프로그램을 다시 만드는 ProgramBench에서 Fable 5.1 하나로 푸는 것과 여러 에이전트로 푸는 것을 비교했다. 다섯 에이전트 팀은 같은 점수(0.6)에 두 배 빨리 도달했고, 필요할 때 서브에이전트를 띄우는 구성은 최종 점수가 가장 높았다. 대신 토큰은 더 쓴다.[^fable-sc] 같은 평가를 Opus 5.5로 한 결과는 공개되지 않았다.
+Fable 5.1 시스템 카드(Anthropic이 모델을 출시할 때 함께 공개하는 문서로, 능력 · 안전성 평가 결과를 담는다)에는 멀티 에이전트 평가가 있다. 바이너리와 문서만 보고 프로그램을 다시 만드는 ProgramBench에서 Fable 5.1 하나로 푸는 것과 여러 에이전트로 푸는 것을 비교했다. 다섯 에이전트 팀은 같은 점수(0.6)에 두 배 빨리 도달했고, 필요할 때 서브에이전트를 띄우는 구성은 최종 점수가 가장 높았다. 대신 토큰은 더 쓴다.[^fable-sc] 같은 평가를 Opus 5.5로 한 결과는 공개되지 않았다.
 
 학계에도 오케스트레이션 전용 벤치마크가 있다. OrchestraBench(위임 실패 유형과 복구, 분해 품질)와 OrchBench(오케스트레이션 플랜을 시뮬레이터로 채점)인데, 둘 다 Claude 5.x 점수는 없다. OrchestraBench의 Sonnet 4.6 · Opus 4.8 · Haiku 4.5 결과에서는 세 모델 모두 "모호한 위임"과 "컨텍스트 오염"을 거의 복구하지 못했다. 모델 급을 올려도 조율 실패는 남는다는 뜻이라, 배선처럼 사람이 규칙을 못박는 이유가 된다.
 
@@ -1150,21 +1196,6 @@ Codex, Gemini, Antigravity 같은 다른 모델 계열의 CLI에 질문을 한 �
 
 [claude-subagent-presets.zip 내려받기](/assets/img/posts/2026-09-30-claude-subagent-superpowers/claude-subagent-presets.zip)
 
-<details markdown="1">
-<summary>발표자 노트 — 10분 배분</summary>
-
-| 절 | 분 | 한 줄 |
-|:--|--:|:--|
-| 도입 | 0.5 | 느리고 비쌌다. 원인은 서브에이전트의 effort 상속 |
-| 메인/서브 개념 + 상속 | 2 | `/model`로 정한 effort를 서브가 그대로 물려받는다 |
-| effort별 비용 · 시간 | 1.5 | xhigh → max는 지수 2점에 토큰 2.6배 |
-| Superpowers 소개 + 운영법 | 2 | 스펙 → 플랜 → 태스크별 구현 · 리뷰. 컨텍스트가 안 쌓인다 |
-| 가이드대로 하면 + 비용 예시 | 1.5 | 모델은 낮춰도 effort는 xhigh. 배선하면 절반 |
-| 메인 선택 | 1 | Opus가 기본, 목표가 뚜렷하면 `/goal`, 막히면 Fable로 올린다 |
-| 프리셋 7종 + 배선 | 1 | tier 4종 + search · web-research · explore. 만들기만 하면 안 불린다 |
-| 리뷰 포인트 + triad | 0.5 | Declined to judge 목록, 다른 계열 교차 리뷰 |
-
-</details>
 
 ## 참고 자료 {#references}
 
@@ -1237,6 +1268,11 @@ Codex, Gemini, Antigravity 같은 다른 모델 계열의 CLI에 질문을 한 �
 [^choosing]: Claude Platform 문서 [Choosing a model](https://platform.claude.com/docs/en/about-claude/models/choosing-a-model), "Option 2: Start capability-first" 절과 모델 선택 표. 2026-10-01 확인.
 [^opus-sc]: Anthropic, [Claude Opus 5.5 System Card](https://www-cdn.anthropic.com/fc1b44717c85dc068bc6ba5024219938094694bd/Claude%20Opus%205.5%20System%20Card.pdf) (2026-09-22). 8장 Table 8.1.A와 8.3 DeepSWE · 8.4 FrontierCode · 8.7 FrontierSWE, 2.3절 내부 사용 관찰과 METR 외부 평가.
 [^fable-sc]: Anthropic, [Claude Fable 5.1 & Claude Mythos 5.1 System Card](https://www-cdn.anthropic.com/0339e6a7c5c7b87f5c07798616dc32c215d14235/Claude%20Fable%205.1%20&%20Claude%20Mythos%205.1%20System%20Card.pdf) (2026-09-01). 8.3 DeepSWE · 8.4 FrontierCode · 8.5 FrontierSWE · 8.13 Multi-Agent, 생물 분야 평가의 약점 서술.
+[^prompt-injection]: Claude Code 공식 문서 [Security](https://code.claude.com/docs/en/security), "Protect against prompt injection" 절: "Prompt injection is a technique where an attacker attempts to override or manipulate an AI assistant's instructions by inserting malicious text." 같은 절에 따르면 WebFetch도 대부분의 페이지를 별도 모델 호출로 처리해, 원문 대신 그 답을 Claude에게 넘긴다.
+[^compaction]: Claude Code 공식 문서 [How Claude Code uses prompt caching](https://code.claude.com/docs/en/prompt-caching), "Compacting the conversation" 절: "Compaction replaces your message history with a summary." Anthropic 엔지니어링 블로그 [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) (2025-09-29): "Overly aggressive compaction can result in the loss of subtle but critical context whose importance only becomes apparent later."
+[^model-cache]: Claude Code 공식 문서 [How Claude Code uses prompt caching](https://code.claude.com/docs/en/prompt-caching), "Switching models" 절: "Each model has its own cache. Switching with `/model` means the next request reads the entire conversation history with no cache hits, even though the content is identical." 같은 문서의 "Subagents and the cache" 절: 서브에이전트를 띄워도 "The parent's cache is unaffected."
+[^sdd-skill]: Superpowers v6.4.2 [subagent-driven-development/SKILL.md](https://github.com/obra/superpowers/blob/main/skills/subagent-driven-development/SKILL.md), "vs. Executing Plans (inline)" 절과 실행 흐름도.
+[^fable-new]: Claude Platform 문서 [What's new in Claude Fable 5.1](https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1), "Changed from Claude Fable 5" 절: "Fewer progress updates during long tool runs."
 [^cost-intel]: Claude Platform 문서 [Optimizing for cost and intelligence](https://platform.claude.com/docs/en/about-claude/models/optimizing-for-cost-and-intelligence), advisor · orchestrator 전략의 측정 예시. 2026-10-01 확인.
 [^goal]: Claude Code 공식 문서 [Keep Claude working toward a goal](https://code.claude.com/docs/en/goal), "Set a goal" · "How evaluation works" 절.
 [^mcp-atlas]: Scale AI, [MCP Atlas 리더보드](https://labs.scale.com/leaderboard/mcp_atlas). 2026-10-01 확인.
