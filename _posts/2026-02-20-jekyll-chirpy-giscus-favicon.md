@@ -242,6 +242,7 @@ repository 의 `_config.yml`{: .filepath}을 수정하자
 
 코드를 보면 우리가 정해준거 말고는 다 알아서 설정해주고 있다 고맙다.
 
+{% raw %}
 ```html
 <script>
   (function () {
@@ -273,6 +274,7 @@ repository 의 `_config.yml`{: .filepath}을 수정하자
     };
 ```
 {: file="_includes/comments/giscus.html" }
+{% endraw %}
 
 저 파일은 starter로 가져왔으면 우리 repository에 보이지도 않는다 결국 원본 theme 에서 가져오는 것이다. 
 이 구조도는 다음과 같다.
