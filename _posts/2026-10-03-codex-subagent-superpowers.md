@@ -1144,14 +1144,21 @@ Superpowers의 최종 리뷰어는 브랜치 전체를 보고 Critical / Importa
 - **운영 준비**: 스키마가 바뀌었다면 마이그레이션, 하위 호환성은 고려됐는가?
 - **최종 리뷰어의 모델과 effort**: GPT-6 계열(V2)에서는 서브에이전트를 띄울 때 화면에 `• Started /root/<작업 이름>`만 찍히고 모델과 effort는 보이지 않는다.[^spawn-src] `/subagents`로 최종 리뷰어를 골라 열면 아래 상태 줄에 모델과 effort가 찍힌다. [앞의 캡처](#effort-at-spawn)처럼 `GPT-6.1-Sol xhigh`인지 확인한다. 다른 값이면 메인이 배선 표를 따르지 않은 것이다.
 
-## 한 걸음 더: triad-dispatch {#triad-dispatch}
+## 한 걸음 더: triad-codex-dispatch {#triad-dispatch}
 
 > 같은 모델 계열의 리뷰어는 구현자와 같은 사각지대를 공유합니다. 다른 계열에게 한 번 더 물어보세요.
 {: .prompt-tip }
 
-Codex 안의 리뷰어도 결국 GPT다. [triad-dispatch](https://github.com/codefoundry-io/triad-dispatch)는 Codex, Gemini, Antigravity에게 독립적인 판정을 받아 오는 플러그인이다. 지금은 Claude Code를 메인으로 둘 때 쓸 수 있다.
+Codex 안의 리뷰어도 결국 GPT다. 같은 모델이 만든 버그를 같은 모델이 리뷰하면, 그 버그를 만든 추론이 그대로 리뷰를 한다.
 
-<!-- TODO: Codex를 메인으로 쓸 때 Claude에게 리뷰를 받는 방법(codex-host)이 정리되면 추가 -->
+> Ask codex to check codex's work and it inherits the same framing — the reasoning that produced the bug is the reasoning that reviews it.
+
+[triad-codex-dispatch](https://github.com/codefoundry-io/triad-codex-dispatch)는 이걸 다른 모델 계열에게 맡기는 Codex 플러그인이다. **Codex는 메인 그대로** 두고, Claude Code(Anthropic)와 AGY 또는 Gemini CLI(Google)를 한 번씩 불러 두 번째, 세 번째 의견을 받아 온다. 위험한 변경은 머지 전에 세 계열이 각자 독립적으로 결정을 검토한다.[^triad-codex]
+
+설치는 Codex 플러그인 마켓플레이스로 하고, Claude Code · AGY · Gemini CLI는 원래 쓰던 로그인을 그대로 쓴다(플러그인이 인증 정보를 새로 만들지 않는다). 자세한 순서는 저장소의 [설치 문서](https://github.com/codefoundry-io/triad-codex-dispatch/blob/main/docs/installation.md)에 있다.
+
+> Claude Code를 메인으로 쓴다면 같은 구조의 형제 플러그인 [triad-dispatch](https://github.com/codefoundry-io/triad-dispatch)를 쓰면 됩니다.
+{: .prompt-info }
 
 ## 정리 {#summary}
 
@@ -1251,7 +1258,8 @@ codex-subagent-presets.zip
 - 코덱스 기가스: [Wikipedia — Codex Gigas](https://en.wikipedia.org/wiki/Codex_Gigas), [290r 악마 그림 (Wikimedia Commons, 퍼블릭 도메인)](https://commons.wikimedia.org/wiki/File:Codex_Gigas_fol_290r_Devil.jpg) (2026-10-03 확인)
 - 읽었지만 본문 근거로 쓰지 않은 자료
   - [Why isn't there a GPT-6-Terra — OpenAI Community](https://community.openai.com/t/why-isnt-there-a-gpt-6-terra/1401951) (OpenAI 쪽 답변 없음)
-- [codefoundry-io/triad-dispatch](https://github.com/codefoundry-io/triad-dispatch)
+- [codefoundry-io/triad-codex-dispatch](https://github.com/codefoundry-io/triad-codex-dispatch) (Codex 메인용, v0.2.558)
+- [codefoundry-io/triad-dispatch](https://github.com/codefoundry-io/triad-dispatch) (Claude Code 메인용)
 
 [^subagents-doc]: Codex 공식 문서 [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents). 기본 서브에이전트, 모델 · effort 상속 규칙, 커스텀 에이전트 TOML, 모델 선택 가이드("start with high for GPT-6 Luna or low for GPT-6 Astra"). 2026-10-02 확인.
 [^config-ref]: Codex 공식 문서 [Configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference), `model_reasoning_effort` · `[agents]` 항목. 2026-10-02 확인.
@@ -1268,6 +1276,7 @@ codex-subagent-presets.zip
 [^sp-precedence]: Superpowers v6.4.2 [using-superpowers/SKILL.md](https://github.com/obra/superpowers/blob/v6.4.2/skills/using-superpowers/SKILL.md): "User instructions (CLAUDE.md, AGENTS.md, GEMINI.md, etc, direct requests) take precedence over skills, which in turn override default behavior."
 [^reasoning-doc]: OpenAI API 문서 [Reasoning models](https://developers.openai.com/api/docs/guides/reasoning): "While reasoning tokens are not visible via the API, they still occupy space in the model's context window and are billed as output tokens." / "GPT-5.6 models instead default to rendering available reasoning from earlier turns." 2026-10-03 확인.
 [^attention]: Vaswani et al., "Attention Is All You Need" (2017), Table 1: Self-Attention complexity per layer $O(n^2 \cdot d)$. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^triad-codex]: [codefoundry-io/triad-codex-dispatch](https://github.com/codefoundry-io/triad-codex-dispatch) README: "codex stays the leader and dispatches **Claude Code** (Anthropic) and **AGY or Gemini CLI** (Google) as single-shot workers, and before you merge a risky change it runs a review where each family independently challenges the decision". 최신 릴리스 v0.2.558. 2026-10-03 확인.
 [^codex-tools]: Superpowers v6.4.2 [using-superpowers/references/codex-tools.md](https://github.com/obra/superpowers/blob/v6.4.2/skills/using-superpowers/references/codex-tools.md).
 [^sp-readme]: Superpowers v6.4.2 [README.md](https://github.com/obra/superpowers), Codex 설치 절.
 [^sdd-skill]: Superpowers v6.4.2 [subagent-driven-development/SKILL.md](https://github.com/obra/superpowers/blob/v6.4.2/skills/subagent-driven-development/SKILL.md), "Model Selection" 절.
