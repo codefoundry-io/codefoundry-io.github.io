@@ -31,6 +31,9 @@ effort가 비용과 시간을 얼마나 낭비하는지, 프리셋을 나눈 근
 > 프리셋 7종과 CLAUDE.md 조각은 [글 끝](#presets-download)에서 내려받을 수 있습니다.
 {: .prompt-info }
 
+> Codex를 쓴다면 [Codex 편](/posts/codex-subagent-superpowers/)을 보세요. 같은 주제를 Codex 기준으로 정리했습니다.
+{: .prompt-tip }
+
 ## 메인 에이전트와 서브에이전트 {#main-vs-subagent}
 
 > 서브에이전트는 자기 컨텍스트에서 따로 일하고, 메인에는 결과 요약만 돌려줍니다.
